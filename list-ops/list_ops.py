@@ -39,12 +39,12 @@ def length(list):
     return 1 + length(tail)
     
 
-def map(function, list):
+def map(function, list, accumulator=[]):
     if length(list) == 0:
-        return []
+        return accumulator
 
     item, *tail = list
-    return [function(item)] + map(function, tail)
+    return map(function, tail, accumulator + [function(item)])
 
 
 def foldl(function, list, initial):
