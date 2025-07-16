@@ -1,3 +1,5 @@
+from itertools import takewhile
+
 CODON_MAP = {
     'AUG': 'Methionine',
     'UUU': 'Phenylalanine',
@@ -20,13 +22,16 @@ CODON_MAP = {
 
 
 def proteins(strand):
-    codons = []
-    for i in range(0, len(strand), 3):
-        triplet = strand[i:i+3]
-        if CODON_MAP[triplet] == 'STOP':
-            break
-        else:
-            codons.append(CODON_MAP[triplet])
 
-    return codons
+    triplets = (
+        strand[i:i+3] 
+        for i in range(0, len(strand), 3)
+    )
 
+    codons = (CODON_MAP[triplet] for triplet in triplets)
+
+    codons_upto_stop = list(
+        takewhile(lambda codon: codon != 'STOP', codons)
+    )
+    
+    return codons_upto_stop
