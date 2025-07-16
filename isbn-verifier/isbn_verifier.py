@@ -1,5 +1,6 @@
 ISBN_LENGTH = 10
 
+
 def is_valid(isbn: str) -> bool:
     """Determine if a string is a valid ISBN-10.
     
@@ -15,30 +16,19 @@ def is_valid(isbn: str) -> bool:
         >>> is_valid("3-598-21508-9")
         False
     """
-
-    cleaned_isbn = isbn.replace('-','')
+    cleaned_isbn = list(isbn.replace('-', ''))
     if len(cleaned_isbn) != ISBN_LENGTH:
         return False
 
-    digits = cleaned_isbn[:9]
-    checksum = cleaned_isbn[-1]
+    if cleaned_isbn[-1] == 'X':
+        cleaned_isbn[-1] = '10'
 
-    if not digits.isdigit():
+    if not all(digit.isdigit() for digit in cleaned_isbn):
         return False
     
-    if not _valid_checksum(checksum):
-        return False
-
-    return (_weighted_sum(digits) + _checksum_value(checksum)) % 11 == 0
-
-def _valid_checksum(checksum: str) -> bool:
-    return checksum.isdigit() or checksum == 'X'
-
-def _weighted_sum(digits: str) -> bool:
-    return sum(
+    weighted_sum = sum(
         int(digit) * (10 - index)
-        for index, digit in enumerate(digits)
+        for index, digit in enumerate(cleaned_isbn)
     )
 
-def _checksum_value(checksum: str) -> bool:
-    return (10 if checksum == 'X' else int(checksum))
+    return weighted_sum % 11 == 0
