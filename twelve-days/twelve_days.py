@@ -34,13 +34,13 @@ def recite(start_verse, end_verse):
 
 
 def get_verse(verse):
-    lines = [f'On the {ORDINALS[verse]} day of Christmas my true love gave to me: ']
-    for i in range(verse, 0, -1):
-        if i == 1 and verse > 1:
-            lines.append('and ' + GIFTS[i])
-        else:
-            lines.append(GIFTS[i])
+    first = [f'On the {ORDINALS[verse]} day of Christmas my true love gave to me: ']
+    middle = GIFTS[verse:1:-1]
+    if verse > 1:
+        last = ['and ' + GIFTS[1]]
+    else:
+        last = GIFTS[1:2]
     
-    return ''.join(lines)
+    return ''.join(first + middle + last)
 
 
