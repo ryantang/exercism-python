@@ -43,3 +43,4 @@ htmlcov/
 *.log
 *.sqlite3
 data/
+.venv/
