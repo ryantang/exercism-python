@@ -14,9 +14,9 @@ class PhoneNumber:
         return self._number[:3]
     
     def pretty(self):
-        exchange = self._number[3:6]
-        subscriber = self._number[6:]
-        return f'({self.area_code})-{exchange}-{subscriber}'
+        exchange_code = self._number[3:6]
+        subscriber_num = self._number[6:]
+        return f'({self.area_code})-{exchange_code}-{subscriber_num}'
     
     @staticmethod
     def standardize(number):
@@ -30,20 +30,24 @@ class PhoneNumber:
         if len(cleaned) < 10:
             raise ValueError("must not be fewer than 10 digits")
         if len(cleaned) == 11:
-            if cleaned[0] == '1':
-                cleaned = cleaned[1:]
-            else:
+            country_code = cleaned[0]
+            if country_code != '1':
                 raise ValueError("11 digits must start with 1")
+            
+            cleaned = cleaned[1:] #PhoneNumber doesn't currently store country code
         if len(cleaned) > 11:
             raise ValueError("must not be greater than 11 digits")
         
-        if cleaned[0] == '0':
+        area_code_start = cleaned[0]
+        if area_code_start == '0':
             raise ValueError("area code cannot start with zero")
-        if cleaned[0] == '1':
+        if area_code_start == '1':
             raise ValueError("area code cannot start with one")
-        if cleaned[3] == '0':
+        
+        exchange_code_start = cleaned[3]
+        if exchange_code_start == '0':
             raise ValueError("exchange code cannot start with zero")
-        if cleaned[3] == '1':
+        if exchange_code_start == '1':
             raise ValueError("exchange code cannot start with one")
         
         return cleaned
