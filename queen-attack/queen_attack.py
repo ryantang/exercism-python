@@ -1,5 +1,4 @@
 class Queen:
-    BOARD_MIN = 0
     BOARD_MAX = 7
 
     def __init__(self, row, column):
@@ -25,30 +24,9 @@ class Queen:
         if self.column == another_queen.column:
             return True
         
-        directions = {
-            "up_right": (1, 1),
-            "up_left": (1, -1),
-            "down_right": (-1, 1),
-            "down_left": (-1, -1),
-        }
-
-        return self._check_diagonals(another_queen, directions)
+        # check diagonals
+        return abs(self.row - another_queen.row) == abs(self.column - another_queen.column)
     
-    def _check_diagonals(self, other_queen, directions):
-        for direction in directions.values():
-            row = self.row
-            column = self.column
-            while self._in_boundary(row, column):
-                row += direction[0]
-                column += direction[1]
-                if other_queen.row == row and other_queen.column == column:
-                    return True
-        return False
-
-    @staticmethod
-    def _in_boundary(row, column):
-        return Queen.BOARD_MIN <= row <= Queen.BOARD_MAX and Queen.BOARD_MIN <= column <= Queen.BOARD_MAX
-
     @staticmethod
     def _validate(row, column):
         validations = {
