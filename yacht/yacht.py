@@ -1,3 +1,5 @@
+"""Scores the Yacht dice game."""
+
 from collections import Counter
 
 # Score categories.
@@ -16,16 +18,24 @@ BIG_STRAIGHT = 11
 CHOICE = 12
 
 
-def score(dice, category):
+def score(dice: list, category: str) -> int:
+    """
+    Calculates the score from a round of the Yacht dice game
+    
+    :param dice: List of five rolled dice values
+    :type dice: list
+    :param category: Category which these dice should be scored by (denoted by constants above)
+    :type category: str
+    :return: Score of the dice for the given category
+    :rtype: int
+    """
     if len(dice) != 5:
         raise ValueError("Must roll five dice")
-    
+
     dice_counts = Counter(dice)
-    
+
     if category == YACHT:
-        if len(dice_counts) == 1:
-            return 50
-        return 0
+        return (50 if len(dice_counts) == 1 else 0)
     if category == ONES:
         return dice_counts[1]
     if category == TWOS:
@@ -39,25 +49,14 @@ def score(dice, category):
     if category == SIXES:
         return dice_counts[6] * 6
     if category == FULL_HOUSE:
-        if set(dice_counts.values()) == {2, 3}:
-            return sum(dice * count for dice, count in dice_counts.items())
-        return 0
+        return (sum(dice) if set(dice_counts.values()) == {2, 3} else 0)
     if category == FOUR_OF_A_KIND:
-        for dice, count in dice_counts.items():
-            if count >= 4:
-                return 4 * dice
-        return 0
+        return next((roll * 4 for roll, count in dice_counts.items() if count >= 4), 0)
     if category == LITTLE_STRAIGHT:
-        if set(dice) == {1, 2, 3, 4, 5}:
-            return 30
-        return 0
+        return (30 if set(dice) == {1, 2, 3, 4, 5} else 0)
     if category == BIG_STRAIGHT:
-        if set(dice) == {2, 3, 4, 5, 6}:
-            return 30
-        return 0
+        return (30 if set(dice) == {2, 3, 4, 5, 6} else 0)
     if category == CHOICE:
-        return sum(dice * count for dice, count in dice_counts.items())
+        return sum(dice)
 
     return 0
-    
-
