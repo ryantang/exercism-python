@@ -1,7 +1,10 @@
+import math
+
 def egg_count(display_value):
-    digits = 0
-    while (2 ** digits) < display_value:
-        digits += 1
+    if display_value == 0:
+        return 0
+
+    digits = math.ceil(math.log2(display_value))
 
     eggs = 0
     remainder = display_value
