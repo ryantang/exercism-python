@@ -1,9 +1,9 @@
 def saddle_points(matrix):
-    if not _regular(matrix):
-        raise ValueError("irregular matrix")
-
     if not matrix:
         return []
+
+    if not _regular(matrix):
+        raise ValueError("irregular matrix")
 
     candidates_x = _highest_in_row(matrix)
     candidates_y = _lowest_in_col(matrix)
@@ -37,14 +37,11 @@ def _highest_in_row(matrix):
 
 
 def _convert(results):
-    converted = []
-    for row_index, col_index in results:
-        converted.append({"row": row_index + 1, "column": col_index + 1})
-    return converted
+    return [
+        {"row": row_index + 1, "column": col_index + 1}
+        for row_index, col_index in results
+    ]
 
 
 def _regular(matrix) -> bool:
-    for row in matrix:
-        if len(row) != len(matrix[0]):
-            return False
-    return True
+    return all(len(row) == len(matrix[0]) for row in matrix)
