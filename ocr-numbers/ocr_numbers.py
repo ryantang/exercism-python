@@ -1,4 +1,6 @@
-NUMBERS = {
+from collections.abc import Iterator
+
+ASCII_TO_DIGIT = {
     (" _ ", "| |", "|_|", "   "): "0",
     ("   ", "  |", "  |", "   "): "1",
     (" _ ", " _|", "|_ ", "   "): "2",
@@ -11,32 +13,44 @@ NUMBERS = {
     (" _ ", "|_|", " _|", "   "): "9",
 }
 
-def convert(input_grid):
-    if len(input_grid) % 4 != 0:
+ASCII_DIGIT_ROWS = 4
+ASCII_DIGIT_COLS = 3
+
+def convert(input_grid: list[str]) -> str:
+    """Convert ASCII art to digit strings
+    
+    Args:
+        input_grid: List of strings representing ASCII art digits
+        
+    Returns:
+        Comma-separated string of recognized digits
+        
+    Raises:
+        ValueError: If dimensions aren't multiples of 4 and 3
+    """
+    if len(input_grid) % ASCII_DIGIT_ROWS != 0:
         raise ValueError("Number of input lines is not a multiple of four")
 
-    if any(len(col) % 3 != 0 for col in input_grid):
+    if any(len(col) % ASCII_DIGIT_COLS != 0 for col in input_grid):
         raise ValueError("Number of input columns is not a multiple of three")
 
     result = []
-    for i in range(len(input_grid)//4):
-        start_row = i * 4
-        end_row = (i + 1) * 4
-        bloc = input_grid[start_row:end_row]
-
-        print(f"bloc is {bloc}")
-        sections = []
-        for j in range(len(bloc[0])//3):
-            ascii_digit = []
-            start = j * 3
-            end = (j + 1) * 3
-
-            for row in bloc:
-                ascii_digit.append(row[start:end])
-
-            sections.append(NUMBERS.get(tuple(ascii_digit), "?"))
-
-        result.append("".join(sections))
+    for bloc in _chunk_row_blocs(input_grid):
+        digits = [
+            ASCII_TO_DIGIT.get(ascii_digit, "?")
+            for ascii_digit in _chunk_single_digit(bloc)
+        ]
+        result.append("".join(digits))
 
     return ",".join(result)
 
+def _chunk_row_blocs(grid: list[str]) -> Iterator[list[str]]:
+    """Chunks off one grouping of ascii art characters"""
+    for i in range(0, len(grid), ASCII_DIGIT_ROWS):
+        yield grid[i:i + ASCII_DIGIT_ROWS]
+
+
+def _chunk_single_digit(bloc: list[str]) -> Iterator[tuple[str, ...]]:
+    """Chunks off a single digit in ascii art"""
+    for i in range(0, len(bloc[0]), ASCII_DIGIT_COLS):
+        yield tuple(row[i:i + ASCII_DIGIT_COLS] for row in bloc)
