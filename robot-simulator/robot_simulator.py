@@ -5,6 +5,13 @@ EAST = 1
 SOUTH = 2
 WEST = 3
 
+DIRECTION_DELTAS = {
+    NORTH: (0, 1),
+    EAST: (1, 0),
+    SOUTH: (0, -1),
+    WEST: (-1, 0)
+}
+
 
 class Robot:
     """A robot simulator that tracks position and direction on a grid.
@@ -20,12 +27,12 @@ class Robot:
 
     @property
     def coordinates(self):
-        """ returned stored tuple of x and y coordinates"""
+        """Return (x,y) position tuple."""
         return (self._x_pos, self._y_pos)
 
     @property
     def direction(self):
-        """ returns stored direction """
+        """Return the direction the robot currently faces."""
         return self._direction
 
     def move(self, instructions):
@@ -40,14 +47,20 @@ class Robot:
         for instruction in instructions:
             match instruction:
                 case "R":
-                    self._direction = (self._direction + 1) % 4
+                    self._turn_right()
                 case "L":
-                    self._direction = (self._direction - 1) % 4
-                case "A" if self.direction == NORTH:
-                    self._y_pos += 1
-                case "A" if self.direction == SOUTH:
-                    self._y_pos -= 1
-                case "A" if self.direction == EAST:
-                    self._x_pos += 1
-                case "A" if self.direction == WEST:
-                    self._x_pos -= 1
+                    self._turn_left()
+                case "A":
+                    self._advance()
+
+    def _turn_right(self):
+        self._direction = (self._direction + 1) % 4
+
+    def _turn_left(self):
+        self._direction = (self._direction - 1) % 4
+
+    def _advance(self):
+        dx, dy = DIRECTION_DELTAS[self.direction]
+        self._x_pos += dx
+        self._y_pos += dy
+
