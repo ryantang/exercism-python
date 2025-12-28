@@ -1,6 +1,29 @@
+import collections
+
 class School:
+    """Manages a school roster with students organized by grade level.
+    
+    This implementation uses a lazy sorting strategy optimized for read-heavy
+    workloads, where roster queries are more frequent than student additions.
+    
+    Internal Data Structure:
+        _roster: defaultdict[int, list[str]]
+            Maps grade levels to lists of student names
+            e.g., {1: ["Alice", "Bob"], 2: ["Charlie", "Diana"]}
+            Uses defaultdict to automatically create empty lists for new grades
+        
+        _added: list[bool] 
+            Tracks the success/failure of each add_student() operation
+            Parallel to the sequence of add_student() calls
+            
+        _roster_dirty: bool
+            Dirty flag for lazy sorting optimization
+            Set to True when students are added, False after sorting
+            Prevents unnecessary re-sorting of unchanged data
+    """
+
     def __init__(self):
-        self._roster = []
+        self._roster = collections.defaultdict(list)
         self._added = []
         self._roster_dirty = False
 
@@ -18,7 +41,7 @@ class School:
         if self._roster_contains(name):
             self._added.append(False)
         else:
-            self._roster.append({"name": name, "grade": grade})
+            self._roster[grade].append(name)
             self._added.append(True)
             self._roster_dirty = True
 
@@ -30,35 +53,44 @@ class School:
             then alphabetically by name within each grade.
         """
         self._lazy_sort_roster()
-        return [
-            student["name"]
-            for student in self._roster
-        ]
+
+        student_names = []
+        grades = sorted(self._roster.keys())
+
+        for grade in grades:
+            student_names.extend(self._roster[grade])
+
+        return student_names
+
 
     def grade(self, grade: int) -> list[str]:
         """Get all student names in a specific grade.
         
         Args:
-            grade_number: The grade level to filter by
+            grade: The grade level to filter by
             
         Returns:
             A list of student names in the specified grade,
             sorted alphabetically by name.
         """
         self._lazy_sort_roster()
-        return [
-            student["name"]
-            for student in self._roster
-            if student["grade"] == grade
-        ]
+        return self._roster[grade]
 
     def added(self) -> list[bool]:
         return self._added
 
     def _roster_contains(self, name) -> bool:
-        return any(student["name"] == name for student in self._roster)
+        for _grade, names in self._roster.items():
+            if any(student_name == name for student_name in names):
+                return True
+        return False
+
 
     def _lazy_sort_roster(self) -> None:
-        if self._roster_dirty:
-            self._roster.sort(key=lambda s: (s["grade"], s["name"]))
-            self._roster_dirty = False
+        if not self._roster_dirty:
+            return
+
+        for grade in self._roster.keys():
+            self._roster[grade].sort()
+
+        self._roster_dirty = False
