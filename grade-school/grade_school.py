@@ -2,6 +2,7 @@ class School:
     def __init__(self):
         self._roster = []
         self._added = []
+        self._roster_dirty = False
 
     def add_student(self, name: str, grade: int) -> None:
         """Add a student to the school roster.
@@ -19,7 +20,7 @@ class School:
         else:
             self._roster.append({"name": name, "grade": grade})
             self._added.append(True)
-            self._roster.sort(key=lambda s: (s["grade"], s["name"]))
+            self._roster_dirty = True
 
     def roster(self) -> list[str]:
         """Get all student names in the school.
@@ -28,12 +29,13 @@ class School:
             A list of all student names, sorted by grade level first,
             then alphabetically by name within each grade.
         """
+        self._lazy_sort_roster()
         return [
             student["name"]
             for student in self._roster
         ]
 
-    def grade(self, grade_number: int) -> list[str]:
+    def grade(self, grade: int) -> list[str]:
         """Get all student names in a specific grade.
         
         Args:
@@ -43,10 +45,11 @@ class School:
             A list of student names in the specified grade,
             sorted alphabetically by name.
         """
+        self._lazy_sort_roster()
         return [
             student["name"]
             for student in self._roster
-            if student["grade"] == grade_number
+            if student["grade"] == grade
         ]
 
     def added(self) -> list[bool]:
@@ -54,3 +57,8 @@ class School:
 
     def _roster_contains(self, name) -> bool:
         return any(student["name"] == name for student in self._roster)
+
+    def _lazy_sort_roster(self) -> None:
+        if self._roster_dirty:
+            self._roster.sort(key=lambda s: (s["grade"], s["name"]))
+            self._roster_dirty = False
