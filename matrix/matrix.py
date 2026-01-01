@@ -1,17 +1,13 @@
 class Matrix:
     def __init__(self, matrix_string):
+        self._matrix = [
+            [int(num_string) for num_string in row.split(" ")]
+            for row in matrix_string.split("\n")
+        ]
 
-        self._matrix = []
-
-        rows = matrix_string.split("\n")
-        for i, row in enumerate(rows):
-            self._matrix.append(
-                [int(num_string) for num_string in row.split(" ")]
-            )
-
-    def row(self, index):
+    def row(self, index) -> list[int]:
         return self._matrix[index - 1]
 
-    def column(self, index):
+    def column(self, index) -> list[int]:
         return [row[index -1] for row in self._matrix]
 
