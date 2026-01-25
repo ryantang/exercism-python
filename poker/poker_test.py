@@ -144,17 +144,17 @@ class PokerTest(unittest.TestCase):
             best_hands(["2H 3C 4D 5D 6H", "4S AH 3S 2D 5H"]), ["2H 3C 4D 5D 6H"]
         )
 
-    # def test_flush_beats_a_straight(self):
-    #     self.assertEqual(
-    #         best_hands(["4C 6H 7D 8D 5H", "2S 4S 5S 6S 7S"]), ["2S 4S 5S 6S 7S"]
-    #     )
+    def test_flush_beats_a_straight(self):
+        self.assertEqual(
+            best_hands(["4C 6H 7D 8D 5H", "2S 4S 5S 6S 7S"]), ["2S 4S 5S 6S 7S"]
+        )
 
-    # def test_both_hands_have_a_flush_tie_goes_to_high_card_down_to_the_last_one_if_necessary(
-    #     self,
-    # ):
-    #     self.assertEqual(
-    #         best_hands(["2H 7H 8H 9H 6H", "3S 5S 6S 7S 8S"]), ["2H 7H 8H 9H 6H"]
-    #     )
+    def test_both_hands_have_a_flush_tie_goes_to_high_card_down_to_the_last_one_if_necessary(
+        self,
+    ):
+        self.assertEqual(
+            best_hands(["2H 7H 8H 9H 6H", "3S 5S 6S 7S 8S"]), ["2H 7H 8H 9H 6H"]
+        )
 
     # def test_full_house_beats_a_flush(self):
     #     self.assertEqual(

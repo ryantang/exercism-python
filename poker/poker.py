@@ -20,6 +20,8 @@ HAND_SIZE = 5
 
 
 def best_hands(hands) -> list[str]:
+    if _flush(hands):
+        return _best_flush(hands)
     if _straight(hands):
         return _best_straight(hands)
     if _three_of_a_kind(hands):
@@ -29,6 +31,18 @@ def best_hands(hands) -> list[str]:
     if _any_pair(hands):
         return _best_pair(hands)
     return _high_card(hands)
+
+def _flush(hands):
+    return any(_has_flush(hand) for hand in hands)
+
+def _has_flush(hand):
+    return any(count==5 for count in _suit_counts(hand).values())
+
+
+def _best_flush(hands):
+    flush_hands = [hand for hand in hands if _has_flush(hand)]
+
+    return _high_card(flush_hands)
 
 def _straight(hands):
     return any(_is_straight(hand) for hand in hands)
@@ -208,7 +222,7 @@ def _higher_card_hand(left, right):
             return "right"
     return "both"
 
-def _values(hand)-> list[str]:
+def _values(hand) -> list[str]:
     """
     Returns just the values of the hand without the suit
     
@@ -218,3 +232,16 @@ def _values(hand)-> list[str]:
         VALUES[card[:-1]]
         for card in hand.split()
     ]
+
+def _suit_counts(hand) -> dict[str, int]:
+    """
+    Given a poker hand, _suit_counts returns a dictionary with suit as keys
+    and the number of cards of that suit as the value.    
+
+    Example: "2H 7S KC 3H 7D" becomes {H: 2, S: 1, C: 1, D: 1}
+    """
+    suit_counts = defaultdict(int)
+    for card in hand.split():
+        suit_counts[card[-1]] += 1
+
+    return suit_counts
