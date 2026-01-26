@@ -156,22 +156,22 @@ class PokerTest(unittest.TestCase):
             best_hands(["2H 7H 8H 9H 6H", "3S 5S 6S 7S 8S"]), ["2H 7H 8H 9H 6H"]
         )
 
-    # def test_full_house_beats_a_flush(self):
-    #     self.assertEqual(
-    #         best_hands(["3H 6H 7H 8H 5H", "4S 5H 4C 5D 4H"]), ["4S 5H 4C 5D 4H"]
-    #     )
+    def test_full_house_beats_a_flush(self):
+        self.assertEqual(
+            best_hands(["3H 6H 7H 8H 5H", "4S 5H 4C 5D 4H"]), ["4S 5H 4C 5D 4H"]
+        )
 
-    # def test_both_hands_have_a_full_house_tie_goes_to_highest_ranked_triplet(self):
-    #     self.assertEqual(
-    #         best_hands(["4H 4S 4D 9S 9D", "5H 5S 5D 8S 8D"]), ["5H 5S 5D 8S 8D"]
-    #     )
+    def test_both_hands_have_a_full_house_tie_goes_to_highest_ranked_triplet(self):
+        self.assertEqual(
+            best_hands(["4H 4S 4D 9S 9D", "5H 5S 5D 8S 8D"]), ["5H 5S 5D 8S 8D"]
+        )
 
-    # def test_with_multiple_decks_both_hands_have_a_full_house_with_the_same_triplet_tie_goes_to_the_pair(
-    #     self,
-    # ):
-    #     self.assertEqual(
-    #         best_hands(["5H 5S 5D 9S 9D", "5H 5S 5D 8S 8D"]), ["5H 5S 5D 9S 9D"]
-    #     )
+    def test_with_multiple_decks_both_hands_have_a_full_house_with_the_same_triplet_tie_goes_to_the_pair(
+        self,
+    ):
+        self.assertEqual(
+            best_hands(["5H 5S 5D 9S 9D", "5H 5S 5D 8S 8D"]), ["5H 5S 5D 9S 9D"]
+        )
 
     # def test_four_of_a_kind_beats_a_full_house(self):
     #     self.assertEqual(

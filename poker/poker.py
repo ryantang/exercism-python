@@ -20,6 +20,8 @@ HAND_SIZE = 5
 
 
 def best_hands(hands) -> list[str]:
+    if _full_house(hands):
+        return _best_full_house(hands)
     if _flush(hands):
         return _best_flush(hands)
     if _straight(hands):
@@ -31,6 +33,21 @@ def best_hands(hands) -> list[str]:
     if _any_pair(hands):
         return _best_pair(hands)
     return _high_card(hands)
+
+def _full_house(hands):
+    return any(_has_full_house(hand) for hand in hands)
+
+def _has_full_house(hand):
+    return _trips(hand) and _has_pair(hand)
+
+def _best_full_house(hands):
+    full_house_hands = [
+        hand for hand in hands
+        if _has_full_house(hand)
+    ]
+
+    return _best_three_of_a_kind(full_house_hands)
+
 
 def _flush(hands):
     return any(_has_flush(hand) for hand in hands)
