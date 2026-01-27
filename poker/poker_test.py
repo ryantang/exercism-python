@@ -173,22 +173,22 @@ class PokerTest(unittest.TestCase):
             best_hands(["5H 5S 5D 9S 9D", "5H 5S 5D 8S 8D"]), ["5H 5S 5D 9S 9D"]
         )
 
-    # def test_four_of_a_kind_beats_a_full_house(self):
-    #     self.assertEqual(
-    #         best_hands(["4S 5H 4D 5D 4H", "3S 3H 2S 3D 3C"]), ["3S 3H 2S 3D 3C"]
-    #     )
+    def test_four_of_a_kind_beats_a_full_house(self):
+        self.assertEqual(
+            best_hands(["4S 5H 4D 5D 4H", "3S 3H 2S 3D 3C"]), ["3S 3H 2S 3D 3C"]
+        )
 
-    # def test_both_hands_have_four_of_a_kind_tie_goes_to_high_quad(self):
-    #     self.assertEqual(
-    #         best_hands(["2S 2H 2C 8D 2D", "4S 5H 5S 5D 5C"]), ["4S 5H 5S 5D 5C"]
-    #     )
+    def test_both_hands_have_four_of_a_kind_tie_goes_to_high_quad(self):
+        self.assertEqual(
+            best_hands(["2S 2H 2C 8D 2D", "4S 5H 5S 5D 5C"]), ["4S 5H 5S 5D 5C"]
+        )
 
-    # def test_with_multiple_decks_both_hands_with_identical_four_of_a_kind_tie_determined_by_kicker(
-    #     self,
-    # ):
-    #     self.assertEqual(
-    #         best_hands(["3S 3H 2S 3D 3C", "3S 3H 4S 3D 3C"]), ["3S 3H 4S 3D 3C"]
-    #     )
+    def test_with_multiple_decks_both_hands_with_identical_four_of_a_kind_tie_determined_by_kicker(
+        self,
+    ):
+        self.assertEqual(
+            best_hands(["3S 3H 2S 3D 3C", "3S 3H 4S 3D 3C"]), ["3S 3H 4S 3D 3C"]
+        )
 
     # def test_straight_flush_beats_four_of_a_kind(self):
     #     self.assertEqual(

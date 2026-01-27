@@ -20,6 +20,8 @@ HAND_SIZE = 5
 
 
 def best_hands(hands) -> list[str]:
+    if _four_of_a_kind(hands):
+        return _best_four_of_a_kind(hands)
     if _full_house(hands):
         return _best_full_house(hands)
     if _flush(hands):
@@ -33,6 +35,37 @@ def best_hands(hands) -> list[str]:
     if _any_pair(hands):
         return _best_pair(hands)
     return _high_card(hands)
+
+def _best_four_of_a_kind(hands):
+    four_of_a_kind_hands = [
+        hand for hand in hands
+        if _has_four_of_a_kind(hand)
+    ]
+
+    if len(four_of_a_kind_hands) > 1:
+        best_four_of_a_kind_hands = [four_of_a_kind_hands[0]]
+        for hand in hands[1:]:
+            if _quads(hand)[0] > _quads(best_four_of_a_kind_hands[0])[0]:
+                best_four_of_a_kind_hands = [hand]
+            elif _quads(hand)[0] == _quads(best_four_of_a_kind_hands[0])[0]:
+                best_four_of_a_kind_hands.append(hand)
+
+        return _high_card(best_four_of_a_kind_hands)
+
+    return four_of_a_kind_hands
+
+def _quads(hand):
+    return [
+        card_value
+        for card_value, count in _counts(hand).items()
+        if count == 4
+    ]
+
+def _four_of_a_kind(hands):
+    return any(_has_four_of_a_kind(hand) for hand in hands)
+
+def _has_four_of_a_kind(hand):
+    return bool(_quads(hand))
 
 def _full_house(hands):
     return any(_has_full_house(hand) for hand in hands)
