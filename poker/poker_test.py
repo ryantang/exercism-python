@@ -190,34 +190,34 @@ class PokerTest(unittest.TestCase):
             best_hands(["3S 3H 2S 3D 3C", "3S 3H 4S 3D 3C"]), ["3S 3H 4S 3D 3C"]
         )
 
-    # def test_straight_flush_beats_four_of_a_kind(self):
-    #     self.assertEqual(
-    #         best_hands(["4S 5H 5S 5D 5C", "7S 8S 9S 6S 10S"]), ["7S 8S 9S 6S 10S"]
-    #     )
+    def test_straight_flush_beats_four_of_a_kind(self):
+        self.assertEqual(
+            best_hands(["4S 5H 5S 5D 5C", "7S 8S 9S 6S 10S"]), ["7S 8S 9S 6S 10S"]
+        )
 
-    # def test_aces_can_end_a_straight_flush_10_j_q_k_a(self):
-    #     self.assertEqual(
-    #         best_hands(["KC AH AS AD AC", "10C JC QC KC AC"]), ["10C JC QC KC AC"]
-    #     )
+    def test_aces_can_end_a_straight_flush_10_j_q_k_a(self):
+        self.assertEqual(
+            best_hands(["KC AH AS AD AC", "10C JC QC KC AC"]), ["10C JC QC KC AC"]
+        )
 
-    # def test_aces_can_start_a_straight_flush_a_2_3_4_5(self):
-    #     self.assertEqual(
-    #         best_hands(["KS AH AS AD AC", "4H AH 3H 2H 5H"]), ["4H AH 3H 2H 5H"]
-    #     )
+    def test_aces_can_start_a_straight_flush_a_2_3_4_5(self):
+        self.assertEqual(
+            best_hands(["KS AH AS AD AC", "4H AH 3H 2H 5H"]), ["4H AH 3H 2H 5H"]
+        )
 
-    # def test_aces_cannot_be_in_the_middle_of_a_straight_flush_q_k_a_2_3(self):
-    #     self.assertEqual(
-    #         best_hands(["2C AC QC 10C KC", "QH KH AH 2H 3H"]), ["2C AC QC 10C KC"]
-    #     )
+    def test_aces_cannot_be_in_the_middle_of_a_straight_flush_q_k_a_2_3(self):
+        self.assertEqual(
+            best_hands(["2C AC QC 10C KC", "QH KH AH 2H 3H"]), ["2C AC QC 10C KC"]
+        )
 
-    # def test_both_hands_have_a_straight_flush_tie_goes_to_highest_ranked_card(self):
-    #     self.assertEqual(
-    #         best_hands(["4H 6H 7H 8H 5H", "5S 7S 8S 9S 6S"]), ["5S 7S 8S 9S 6S"]
-    #     )
+    def test_both_hands_have_a_straight_flush_tie_goes_to_highest_ranked_card(self):
+        self.assertEqual(
+            best_hands(["4H 6H 7H 8H 5H", "5S 7S 8S 9S 6S"]), ["5S 7S 8S 9S 6S"]
+        )
 
-    # def test_even_though_an_ace_is_usually_high_a_5_high_straight_flush_is_the_lowest_scoring_straight_flush(
-    #     self,
-    # ):
-    #     self.assertEqual(
-    #         best_hands(["2H 3H 4H 5H 6H", "4D AD 3D 2D 5D"]), ["2H 3H 4H 5H 6H"]
-    #     )
+    def test_even_though_an_ace_is_usually_high_a_5_high_straight_flush_is_the_lowest_scoring_straight_flush(
+        self,
+    ):
+        self.assertEqual(
+            best_hands(["2H 3H 4H 5H 6H", "4D AD 3D 2D 5D"]), ["2H 3H 4H 5H 6H"]
+        )
