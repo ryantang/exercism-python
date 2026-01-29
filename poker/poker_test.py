@@ -11,7 +11,7 @@ from poker import (
 
 class PokerTest(unittest.TestCase):
     def test_single_hand_always_wins(self):
-        self.assertEqual(best_hands(["4S 5S 7H 8D 2C"]), ["4S 5S 7H 8D 2C"])
+        self.assertEqual(best_hands(["4S 5S 7H 8D JC"]), ["4S 5S 7H 8D JC"])
 
     def test_highest_card_out_of_all_hands_wins(self):
         self.assertEqual(
