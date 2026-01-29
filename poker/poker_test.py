@@ -51,7 +51,7 @@ class PokerTest(unittest.TestCase):
 
     def test_highest_pair_wins(self):
         self.assertEqual(
-            best_hands(["4S 2H 6S 2D JH", "2S 4H 6C 4D JD"]), ["2S 4H 6C 4D JD"]
+            best_hands(["4S 2H 6S 2D KH", "2S 4H 6C 4D JD"]), ["2S 4H 6C 4D JD"]
         )
 
     def test_both_hands_have_the_same_pair_high_card_wins(self):
