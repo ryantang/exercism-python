@@ -18,9 +18,33 @@ RANKS = {
 
 
 def best_hands(hands):
+    if _two_pair(hands):
+        return _best_two_pair(hands)
     if _pair(hands):
         return _best_pair(hands)
     return _best_high_card(hands)
+
+def _two_pair(hands):
+    return any(_has_two_pair(hand) for hand in hands)
+
+def _best_two_pair(hands):
+    two_paired_hands = [hand for hand in hands if _has_two_pair(hand)]
+    if len(two_paired_hands) < 2:
+        return two_paired_hands
+
+    best_two_paired_hands = [two_paired_hands[0]]
+    for hand in hands[1:]:
+        sorted_best_pairs = sorted(_pair_ranks(best_two_paired_hands[0]), reverse=True)
+        sorted_hand_pairs = sorted(_pair_ranks(hand), reverse=True)
+        if sorted_hand_pairs > sorted_best_pairs:
+            best_two_paired_hands = [hand]
+        elif sorted_hand_pairs == best_two_paired_hands:
+            best_two_paired_hands.append(hand)
+    return _best_high_card(best_two_paired_hands)
+
+
+def _has_two_pair(hand):
+    return len(_pair_ranks(hand)) == 2
 
 def _best_pair(hands):
     paired_hands = [hand for hand in hands if _has_pair(hand)]
