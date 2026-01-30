@@ -21,6 +21,8 @@ WHEEL_RANK = [1, 2, 3, 4, 5]
 
 
 def best_hands(hands):
+    if _straight_flush(hands):
+        return _best_straight_flush(hands)
     if _four_of_a_kind(hands):
         return _best_four_of_a_kind(hands)
     if _full_house(hands):
@@ -36,6 +38,16 @@ def best_hands(hands):
     if _pair(hands):
         return _best_pair(hands)
     return _best_high_card(hands)
+
+def _best_straight_flush(hands):
+    straight_flush_hands = [hand for hand in hands if _has_straight_flush(hand)]
+    return _best_high_card(straight_flush_hands)
+
+def _straight_flush(hands):
+    return any(_has_straight_flush(hand) for hand in hands)
+
+def _has_straight_flush(hand):
+    return _has_straight(hand) and _has_flush(hand)
 
 def _best_four_of_a_kind(hands):
     four_of_a_kind_hands = [hand for hand in hands if _has_four_of_a_kind(hand)]
