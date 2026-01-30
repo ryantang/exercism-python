@@ -16,8 +16,13 @@ RANKS = {
     "A" : 14,
 }
 
+WHEEL_CHECK = [2, 3, 4, 5, 14]
+WHEEL_RANK = [1, 2, 3, 4, 5]
+
 
 def best_hands(hands):
+    if _straight(hands):
+        return _best_straight(hands)
     if _three_of_a_kind(hands):
         return _best_three_of_a_kind(hands)
     if _two_pair(hands):
@@ -25,6 +30,23 @@ def best_hands(hands):
     if _pair(hands):
         return _best_pair(hands)
     return _best_high_card(hands)
+
+def _best_straight(hands):
+    straight_hands = [hand for hand in hands if _has_straight(hand)]
+    return _best_high_card(straight_hands)
+
+
+def _straight(hands):
+    return any(_has_straight(hand) for hand in hands)
+
+
+def _has_straight(hand):
+    card_values = _ranks(hand)
+    low_card = min(card_values)
+    five_in_a_row = list(range(low_card, low_card + 5))
+
+    return sorted(card_values) == five_in_a_row
+
 
 def _best_three_of_a_kind(hands):
     three_of_a_kind_hands = [hand for hand in hands if _has_three_of_a_kind(hand)]
@@ -118,7 +140,8 @@ def _best_high_card(hands):
     return best_high_card_hands
 
 def _ranks(hand):
-    return [
-        RANKS[card[:-1]]
-        for card in hand.split()
-    ]
+    ranks = [RANKS[card[:-1]] for card in hand.split()]
+    if sorted(ranks) == WHEEL_CHECK:
+        return WHEEL_RANK
+
+    return ranks
