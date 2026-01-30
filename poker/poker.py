@@ -18,11 +18,39 @@ RANKS = {
 
 
 def best_hands(hands):
+    if _three_of_a_kind(hands):
+        return _best_three_of_a_kind(hands)
     if _two_pair(hands):
         return _best_two_pair(hands)
     if _pair(hands):
         return _best_pair(hands)
     return _best_high_card(hands)
+
+def _best_three_of_a_kind(hands):
+    three_of_a_kind_hands = [hand for hand in hands if _has_three_of_a_kind(hand)]
+    if len(three_of_a_kind_hands) < 2:
+        return three_of_a_kind_hands
+
+    best_three_of_a_kind_hands = [three_of_a_kind_hands[0]]
+    for hand in three_of_a_kind_hands[1:]:
+        sorted_best_triples = sorted(_trips_ranks(best_three_of_a_kind_hands[0]), reverse=True)
+        sorted_hand_triples = sorted(_trips_ranks(hand), reverse=True)
+        if sorted_hand_triples > sorted_best_triples:
+            best_three_of_a_kind_hands = [hand]
+        elif sorted_hand_triples == sorted_best_triples:
+            best_three_of_a_kind_hands.append(hand)
+
+    return _best_high_card(best_three_of_a_kind_hands)
+
+def _trips_ranks(hand):
+    return [rank for rank, count in _counts(hand).items() if count == 3]
+
+
+def _three_of_a_kind(hands):
+    return any(_has_three_of_a_kind(hand) for hand in hands)
+
+def _has_three_of_a_kind(hands):
+    return any(count == 3 for count in _counts(hands).values())
 
 def _two_pair(hands):
     return any(_has_two_pair(hand) for hand in hands)
