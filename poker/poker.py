@@ -21,6 +21,10 @@ WHEEL_RANK = [1, 2, 3, 4, 5]
 
 
 def best_hands(hands):
+    if _four_of_a_kind(hands):
+        return _best_four_of_a_kind(hands)
+    if _full_house(hands):
+        return _best_full_house(hands)
     if _flush(hands):
         return _best_flush(hands)
     if _straight(hands):
@@ -33,10 +37,48 @@ def best_hands(hands):
         return _best_pair(hands)
     return _best_high_card(hands)
 
+def _best_four_of_a_kind(hands):
+    four_of_a_kind_hands = [hand for hand in hands if _has_four_of_a_kind(hand)]
+    if len(four_of_a_kind_hands) < 2:
+        return four_of_a_kind_hands
+
+    best_four_of_a_kind_hands = [four_of_a_kind_hands[0]]
+    for hand in hands[1:]:
+        best_quads = sorted(_quad_ranks(best_four_of_a_kind_hands[0]), reverse=True)
+        hand_quads = sorted(_quad_ranks(hand), reverse=True)
+        if hand_quads > best_quads:
+            best_four_of_a_kind_hands = [hand]
+        elif hand_quads == best_quads:
+            best_four_of_a_kind_hands.append(hand)
+
+    return _best_high_card(best_four_of_a_kind_hands)
+
+
+def _quad_ranks(hand):
+    return [rank for rank, count in _counts(hand).items() if count == 4]
+
+def _four_of_a_kind(hands):
+    return any(_has_four_of_a_kind(hand) for hand in hands)
+
+def _has_four_of_a_kind(hand):
+    return any(count == 4 for count in _counts(hand).values())
+
+def _best_full_house(hands):
+    full_house_hands = [hand for hand in hands if _has_full_house(hand)]
+
+    return _best_three_of_a_kind(full_house_hands)
+
+def _full_house(hands):
+    return any(_has_full_house(hand) for hand in hands)
+
+def _has_full_house(hand):
+    return _has_three_of_a_kind(hand) and _has_pair(hand)
+
+
 def _best_flush(hands):
     flush_hands = [hand for hand in hands if _has_flush(hand)]
 
-    return flush_hands
+    return _best_high_card(flush_hands)
 
 
 def _flush(hands):
