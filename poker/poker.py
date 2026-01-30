@@ -21,6 +21,8 @@ WHEEL_RANK = [1, 2, 3, 4, 5]
 
 
 def best_hands(hands):
+    if _flush(hands):
+        return _best_flush(hands)
     if _straight(hands):
         return _best_straight(hands)
     if _three_of_a_kind(hands):
@@ -30,6 +32,18 @@ def best_hands(hands):
     if _pair(hands):
         return _best_pair(hands)
     return _best_high_card(hands)
+
+def _best_flush(hands):
+    flush_hands = [hand for hand in hands if _has_flush(hand)]
+
+    return flush_hands
+
+
+def _flush(hands):
+    return any(_has_flush(hand) for hand in hands)
+
+def _has_flush(hand):
+    return any(count == 5 for count in _suit_counts(hand).values())
 
 def _best_straight(hands):
     straight_hands = [hand for hand in hands if _has_straight(hand)]
@@ -125,6 +139,10 @@ def _has_pair(hand):
 
 def _counts(hand):
     return Counter(_ranks(hand))
+
+def _suit_counts(hand):
+    suits = [card[-1] for card in hand]
+    return Counter(suits)
 
 
 def _best_high_card(hands):
