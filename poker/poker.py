@@ -49,22 +49,34 @@ def _straight_flush(hands):
 def _has_straight_flush(hand):
     return _has_straight(hand) and _has_flush(hand)
 
+def _best_by_rank_groups(hands, filter_fn, rank_fn):
+    """Generic helper to find best hands by comparing rank groups such as
+    four-of-a-kinds, three-of-a-kind, two pairs.
+    
+    Args:
+        hands: All hands to compare
+        filter_fn: Function to filter qualifying hands (e.g., _has_pair)
+        rank_fn: Function to extract comparable ranks (e.g., _pair_ranks)
+    """
+    qualified_hands = [hand for hand in hands if filter_fn(hand)]
+    if len(qualified_hands) < 2:
+        return qualified_hands
+
+    # A "set" here means matching cards (pairs, trips, quads).
+    # For two-pair, sets is a list of both pair values: [10, 3] means pair of 10s and pair of 3s
+    # Cache set calculations to avoid repeated function calls
+    hands_with_sets = [
+        (hand, sorted(rank_fn(hand), reverse=True))
+        for hand in qualified_hands
+    ]
+
+    best_sets = max(sets for _hand, sets in hands_with_sets)
+    hands_with_best_sets = [hand for hand, sets in hands_with_sets if sets == best_sets]
+
+    return _best_high_card(hands_with_best_sets)
+
 def _best_four_of_a_kind(hands):
-    four_of_a_kind_hands = [hand for hand in hands if _has_four_of_a_kind(hand)]
-    if len(four_of_a_kind_hands) < 2:
-        return four_of_a_kind_hands
-
-    best_four_of_a_kind_hands = [four_of_a_kind_hands[0]]
-    for hand in hands[1:]:
-        best_quads = sorted(_quad_ranks(best_four_of_a_kind_hands[0]), reverse=True)
-        hand_quads = sorted(_quad_ranks(hand), reverse=True)
-        if hand_quads > best_quads:
-            best_four_of_a_kind_hands = [hand]
-        elif hand_quads == best_quads:
-            best_four_of_a_kind_hands.append(hand)
-
-    return _best_high_card(best_four_of_a_kind_hands)
-
+    return _best_by_rank_groups(hands, _has_four_of_a_kind, _quad_ranks)
 
 def _quad_ranks(hand):
     return [rank for rank, count in _counts(hand).items() if count == 4]
@@ -117,20 +129,7 @@ def _has_straight(hand):
 
 
 def _best_three_of_a_kind(hands):
-    three_of_a_kind_hands = [hand for hand in hands if _has_three_of_a_kind(hand)]
-    if len(three_of_a_kind_hands) < 2:
-        return three_of_a_kind_hands
-
-    best_three_of_a_kind_hands = [three_of_a_kind_hands[0]]
-    for hand in three_of_a_kind_hands[1:]:
-        sorted_best_triples = sorted(_trips_ranks(best_three_of_a_kind_hands[0]), reverse=True)
-        sorted_hand_triples = sorted(_trips_ranks(hand), reverse=True)
-        if sorted_hand_triples > sorted_best_triples:
-            best_three_of_a_kind_hands = [hand]
-        elif sorted_hand_triples == sorted_best_triples:
-            best_three_of_a_kind_hands.append(hand)
-
-    return _best_high_card(best_three_of_a_kind_hands)
+    return _best_by_rank_groups(hands, _has_three_of_a_kind, _trips_ranks)
 
 def _trips_ranks(hand):
     return [rank for rank, count in _counts(hand).items() if count == 3]
@@ -146,44 +145,18 @@ def _two_pair(hands):
     return any(_has_two_pair(hand) for hand in hands)
 
 def _best_two_pair(hands):
-    two_paired_hands = [hand for hand in hands if _has_two_pair(hand)]
-    if len(two_paired_hands) < 2:
-        return two_paired_hands
-
-    best_two_paired_hands = [two_paired_hands[0]]
-    for hand in hands[1:]:
-        sorted_best_pairs = sorted(_pair_ranks(best_two_paired_hands[0]), reverse=True)
-        sorted_hand_pairs = sorted(_pair_ranks(hand), reverse=True)
-        if sorted_hand_pairs > sorted_best_pairs:
-            best_two_paired_hands = [hand]
-        elif sorted_hand_pairs == best_two_paired_hands:
-            best_two_paired_hands.append(hand)
-    return _best_high_card(best_two_paired_hands)
+    return _best_by_rank_groups(hands, _has_two_pair, _pair_ranks)
 
 
 def _has_two_pair(hand):
     return len(_pair_ranks(hand)) == 2
 
 def _best_pair(hands):
-    paired_hands = [hand for hand in hands if _has_pair(hand)]
-    if len(paired_hands) < 2:
-        return paired_hands
-
-    best_paired_hands = [paired_hands[0]]
-    for hand in paired_hands[1:]:
-        if _pair_ranks(hand) > _pair_ranks(best_paired_hands[0]):
-            best_paired_hands = [hand]
-        elif _pair_ranks(hand)[0] == _pair_ranks(best_paired_hands[0])[0]:
-            best_paired_hands.append(hand)
-    return _best_high_card(best_paired_hands)
+    return _best_by_rank_groups(hands, _has_pair, _pair_ranks)
 
 
 def _pair_ranks(hand):
-    return [
-        rank
-        for rank, count in _counts(hand).items()
-        if count == 2
-    ]
+    return [rank for rank, count in _counts(hand).items() if count == 2]
 
 def _pair(hands):
     return any(_has_pair(hand) for hand in hands)
@@ -195,21 +168,17 @@ def _counts(hand):
     return Counter(_ranks(hand))
 
 def _suit_counts(hand):
-    suits = [card[-1] for card in hand]
-    return Counter(suits)
+    return Counter(card[-1] for card in hand.split())
 
 
 def _best_high_card(hands):
-    best_high_card_hands = [hands[0]]
-    for hand in hands[1:]:
-        sorted_best = sorted(_ranks(best_high_card_hands[0]), reverse=True)
-        sorted_hand = sorted(_ranks(hand), reverse=True)
-        if sorted_hand > sorted_best:
-            best_high_card_hands = [hand]
-        elif sorted_hand == sorted_best:
-            best_high_card_hands.append(hand)
+    hands_with_sorted_ranks = [
+        (hand, sorted(_ranks(hand), reverse=True))
+        for hand in hands
+    ]
 
-    return best_high_card_hands
+    highest_ranks = max(ranks for _hand, ranks in hands_with_sorted_ranks)
+    return [hand for hand, ranks in hands_with_sorted_ranks if ranks == highest_ranks]
 
 def _ranks(hand):
     ranks = [RANKS[card[:-1]] for card in hand.split()]
