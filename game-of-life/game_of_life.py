@@ -35,15 +35,15 @@ def _live_neighbors(coordinates: tuple[int, int], matrix: list[list[int]]) -> in
     row_index, col_index = coordinates
     num_rows, num_cols = len(matrix), len(matrix[0])
 
-    live_neighbors = 0
+    deltas = [
+        (i, j)
+        for i in (-1, 0, 1)
+        for j in (-1, 0, 1)
+        if (i, j) != (0, 0)
+    ]
 
-    for i in (-1, 0, 1):
-        for j in (-1, 0, 1):
-            if (i, j) != (0, 0):
-                neighbor_row = row_index + i
-                neighbor_col = col_index + j
-                if (0 <= neighbor_row < num_rows
-                    and 0 <= neighbor_col < num_cols):
-                    live_neighbors += matrix[neighbor_row][neighbor_col]
-
-    return live_neighbors
+    return sum(
+        matrix[row_index + i][col_index + j]
+        for i, j in deltas
+        if 0 <= row_index + i < num_rows and 0 <= col_index + j < num_cols
+    )
