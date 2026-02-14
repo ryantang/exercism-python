@@ -1,25 +1,28 @@
 import re
 
 def answer(question):
-    pattern = r"What is (-?\d+)( \w+\s?\w* )?(-?\d+)?\?"
-    result = re.search(pattern, question)
+    start_match = re.search(r"What is (-?\d+)", question)
+    starting_number = start_match.group(1)
+    print(f'starting number is {starting_number}')
 
-    if result:
+    operations = re.findall(r"(plus|minus|multiplied by|divided by) (-?\d+)", question)
+    print(f"operations is {operations}")
 
-        operator = result.group(2)
-        if isinstance(operator, str):
-            operator = operator.strip()
-            print(f'operator is {operator}')
+    if starting_number and not operations:
+        return int(starting_number)
+
+    accumulator = int(starting_number)
+    for operation in operations:
+        operator, operand = operation
 
         match operator:
-            case None:
-                return int(result.group(1))
             case "plus":
-                return int(result.group(1)) + int(result.group(3))
+                accumulator = accumulator + int(operand)
             case "minus":
-                return int(result.group(1)) - int(result.group(3))
+                accumulator = accumulator - int(operand)
             case "multiplied by":
-                return int(result.group(1)) * int(result.group(3))
+                accumulator = accumulator * int(operand)
             case "divided by":
-                return int(result.group(1)) / int(result.group(3))
+                accumulator = accumulator / int(operand)
 
+    return accumulator
