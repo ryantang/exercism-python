@@ -11,15 +11,14 @@ def cipher_text(plain_text: str) -> str:
     if not normalized:
         return normalized
 
-    # Calculate rectangle dimensions: cols = ceil(sqrt(len)), rows = ceil(len/cols)
-    len_normalized = len(normalized)
-    num_cols = math.ceil(math.sqrt(len_normalized))
-    num_rows = math.ceil(len_normalized / num_cols)
-    normalized = normalized.ljust(num_cols * num_rows)
+    # Calculate rectangle dimensions: as "square" as possible
+    num_cols = math.ceil(math.sqrt(len(normalized)))
+    num_rows = math.ceil(len(normalized) / num_cols)
+    padded_text = normalized.ljust(num_cols * num_rows)
 
     # Build matrix by splitting normalized text into rows
     matrix = [
-        list(normalized[i * num_cols:(i + 1) * num_cols])
+        list(padded_text[i * num_cols:(i + 1) * num_cols])
         for i in range(num_rows)
     ]
 
