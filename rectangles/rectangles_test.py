@@ -5,13 +5,11 @@
 import unittest
 
 from rectangles import (
-    rectangles, _combinations
+    rectangles,
 )
 
 
 class RectanglesTest(unittest.TestCase):
-    def test_combinations(self):
-        self.assertEqual(_combinations([1,2,3]),[(1,2),(1,3),(2,3)])
 
     def test_no_rows(self):
         self.assertEqual(rectangles([]), 0)
@@ -39,9 +37,6 @@ class RectanglesTest(unittest.TestCase):
 
     def test_1x1_square_is_counted(self):
         self.assertEqual(rectangles(["++", "++"]), 1)
-
-    def test_only_complete_rectangles_are_counted(self):
-        self.assertEqual(rectangles(["  +-+", "    |", "+-+-+", "| | -", "+-+-+"]), 1)
 
     def test_only_complete_rectangles_are_counted(self):
         self.assertEqual(rectangles([

@@ -1,22 +1,25 @@
+from itertools import combinations
+
 def rectangles(strings):
     if not strings:
         return 0
 
+    col_width = max(len(string) for string in strings)
 
+    matrix = [
+        list(string.ljust(col_width))
+        for string in strings
+    ]
 
+    rows_of_plusses = [
+        [col_index for col_index, cell in enumerate(row) if cell == '+']
+        for row in matrix
+    ]
 
-    rows_of_plusses = []
-    for row in strings:
-        plus_cols = []
-        for col_ind, char in enumerate(row):
-            if char == '+':
-                plus_cols.append(col_ind)
-        rows_of_plusses.append(plus_cols)
-
-    plus_combos = []
-    for row in rows_of_plusses:
-        plus_combos.append(_combinations(row))
-
+    plus_combos = [
+        list(combinations(row, 2))
+        for row in rows_of_plusses
+    ]
 
     candidates = []
     for top_index, top_row in enumerate(plus_combos):
@@ -31,35 +34,16 @@ def rectangles(strings):
                     )
                     candidates.append(candidate)
 
-    print(f'candidates is {candidates}')
-
     valid_rectangles = (
         1
         for candidate in candidates
-        if _check_rectangle(strings, candidate)
+        if _check_rectangle(matrix, candidate)
     )
 
-    # return "break test intentionally"
+    # return "break intentionally"
     return sum(valid_rectangles)
 
-    # return len(candidates)
-
-
-def _check_rectangle(strings, candidate) -> bool:
-
-    col_width = max(len(string) for string in strings)
-
-    matrix = [
-        list(string.ljust(col_width))
-        for string in strings
-    ]
-
-    edge_coordinates = {
-        *_edge(candidate[0], candidate[1]),
-        *_edge(candidate[2], candidate[3]),
-        *_edge(candidate[0], candidate[2]),
-        *_edge(candidate[1], candidate[3])
-    }
+def _check_rectangle(matrix, candidate) -> bool:
 
     top_edge = _edge(candidate[0], candidate[1])
     bottom_edge = _edge(candidate[2], candidate[3])
@@ -99,20 +83,3 @@ def _edge(corner1, corner2):
         raise ValueError("not verticess of a rectangle")
 
     return edge_coordinates
-
-
-def _combinations(items):
-    combinations = []
-    for i, item in enumerate(items):
-        remainder = items[i+1:]
-        combinations += list(zip([item] * len(remainder), remainder ))
-
-    return combinations
-
-
-
-    #change into matrix
-    #get '+' coordinates
-    #for each row, get all combination of two '+' coordinates
-    #   for each row below original row, see if there's another matching set of two '+'s
-    #       if so, increment number of rectangles    
