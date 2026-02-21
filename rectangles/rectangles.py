@@ -3,6 +3,7 @@ from collections import namedtuple
 from collections.abc import Iterator
 
 Rectangle = namedtuple('Rectangle', ('top_left', 'top_right', 'bottom_left', 'bottom_right'))
+Point = namedtuple('Point', ('row_index', 'col_index'))
 
 
 def rectangles(strings: list[str]) -> int:
@@ -39,10 +40,10 @@ def _candidate_rectangles(plus_combos: list[list[tuple[int, int]]]) -> Iterator[
             for combo in matching_combos:
                 left_index, right_index = combo
                 yield Rectangle(
-                    top_left=(top_index, left_index),
-                    top_right=(top_index, right_index),
-                    bottom_left=(bottom_index, left_index),
-                    bottom_right=(bottom_index, right_index)
+                    top_left = Point(top_index, left_index),
+                    top_right = Point(top_index, right_index),
+                    bottom_left = Point(bottom_index, left_index),
+                    bottom_right = Point(bottom_index, right_index)
                 )
 
 
@@ -58,18 +59,21 @@ def _valid_rectangle(matrix: list[list[str]], candidate: Rectangle) -> bool:
 
     return horizontal_edges_filled and vertical_edges_filled
 
-def _filled(matrix: list[list[str]], edges: list[tuple[int,int]], valid_symbols: str) -> bool:
+def _filled(matrix: list[list[str]], edges: list[Point], valid_symbols: str) -> bool:
     """Return whether all edge cells contain valid symbols."""
     return all(matrix[i][j] in valid_symbols for i, j in edges)
 
-def _edge(corner1: tuple[int, int], corner2: tuple[int, int]) -> list[tuple[int, int]]:
+def _edge(corner1: Point, corner2: Point) -> list[Point]:
     """Return the coordinates of all cells between two corners."""
-    row_1, col_1 = corner1
-    row_2, col_2 = corner2
-
-    if row_1 == row_2: # horizontal edge
-        return [(row_1, col_index) for col_index in range(col_1, col_2 + 1)]
-    if col_1 == col_2: # vertical edge
-        return [(row_index, col_1) for row_index in range(row_1, row_2 + 1)]
+    if corner1.row_index == corner2.row_index: # horizontal edge
+        return [
+            Point(corner1.row_index, col_index)
+            for col_index in range(corner1.col_index, corner2.col_index + 1)
+        ]
+    if corner1.col_index == corner2.col_index: # vertical edge
+        return [
+            Point(row_index, corner1.col_index)
+            for row_index in range(corner1.row_index, corner2.row_index + 1)
+        ]
 
     raise ValueError("corners are not vertices of a rectangle")
