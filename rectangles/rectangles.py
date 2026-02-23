@@ -1,3 +1,5 @@
+"""Functions for counting rectangles in an ASCII diagram."""
+
 from itertools import combinations
 from collections import namedtuple
 from collections.abc import Iterator
@@ -54,14 +56,14 @@ def _valid_rectangle(matrix: list[list[str]], candidate: Rectangle) -> bool:
     left_edge = _edge(candidate.top_left, candidate.bottom_left)
     right_edge = _edge(candidate.top_right, candidate.bottom_right)
 
-    horizontal_edges_filled = _filled(matrix, top_edge + bottom_edge, "+-")
-    vertical_edges_filled = _filled(matrix, left_edge + right_edge, "+|")
+    horizontal_edges_filled = _filled(matrix, top_edge + bottom_edge, '+-')
+    vertical_edges_filled = _filled(matrix, left_edge + right_edge, '+|')
 
     return horizontal_edges_filled and vertical_edges_filled
 
 def _filled(matrix: list[list[str]], edges: list[Point], valid_symbols: str) -> bool:
     """Return whether all edge cells contain valid symbols."""
-    return all(matrix[i][j] in valid_symbols for i, j in edges)
+    return all(matrix[point.row_index][point.col_index] in valid_symbols for point in edges)
 
 def _edge(corner1: Point, corner2: Point) -> list[Point]:
     """Return the coordinates of all cells between two corners."""
@@ -76,4 +78,4 @@ def _edge(corner1: Point, corner2: Point) -> list[Point]:
             for row_index in range(corner1.row_index, corner2.row_index + 1)
         ]
 
-    raise ValueError("corners are not vertices of a rectangle")
+    raise ValueError('corners are not vertices of a rectangle')
