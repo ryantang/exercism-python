@@ -112,3 +112,10 @@ class SimpleLinkedListTest(unittest.TestCase):
     def test_reverse_non_empty_list(self):
         sut = LinkedList([1, 2, 3])
         self.assertEqual(list(sut.reversed()), [1, 2, 3])
+
+    def test_can_iterate_twice(self):
+        """Calling list() twice on the same LinkedList should produce the same result."""
+        sut = LinkedList([1, 2, 3])
+        first_pass = list(sut)
+        second_pass = list(sut)
+        self.assertEqual(first_pass, second_pass)
