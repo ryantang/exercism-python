@@ -1,21 +1,18 @@
+from dataclasses import dataclass, field
 from itertools import islice
 
+@dataclass
 class Record:
     """Represents a raw record with an ID and a parent ID."""
-
-    def __init__(self, record_id: int, parent_id: int) -> None:
-        """Initialize a record with its ID and parent ID."""
-        self.record_id = record_id
-        self.parent_id = parent_id
+    record_id: int
+    parent_id: int
 
 
+@dataclass
 class Node:
     """Represents a node in a tree, with an ID and a list of child nodes."""
-
-    def __init__(self, node_id: int) -> None:
-        """Initialize a node with its ID and an empty children list."""
-        self.node_id = node_id
-        self.children: list["Node"] = []
+    node_id: int
+    children: list["Node"] = field(default_factory=list)
 
 
 def build_tree(records: list[Record]) -> Node | None:
@@ -44,10 +41,10 @@ def build_tree(records: list[Record]) -> Node | None:
     if any(record.record_id == record.parent_id for record in records if record.record_id != 0):
         raise ValueError('Only root should have equal record and parent id.')
 
-    nodes = {0: Node(0)}
+    nodes = {0: Node(node_id=0)} #seed with root node
 
-    for record in islice(records, 1, None):
-        new_node = Node(record.record_id)
+    for record in islice(records, 1, None): #skip pre-seeded root node
+        new_node = Node(node_id=record.record_id)
         nodes[record.record_id] = new_node
         nodes[record.parent_id].children.append(new_node)
 
