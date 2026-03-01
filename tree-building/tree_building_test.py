@@ -1,6 +1,6 @@
 import unittest
 
-from tree_building import Record, BuildTree
+from tree_building import Record, build_tree
 
 
 class TreeBuildingTest(unittest.TestCase):
@@ -13,14 +13,14 @@ class TreeBuildingTest(unittest.TestCase):
 
     def test_empty_list_input(self):
         records = []
-        root = BuildTree(records)
+        root = build_tree(records)
         self.assertIsNone(root)
 
     def test_one_node(self):
         records = [
             Record(0, 0)
         ]
-        root = BuildTree(records)
+        root = build_tree(records)
 
         self.assert_node_is_leaf(root, node_id=0)
 
@@ -30,7 +30,7 @@ class TreeBuildingTest(unittest.TestCase):
             Record(1, 0),
             Record(2, 0)
         ]
-        root = BuildTree(records)
+        root = build_tree(records)
 
         self.assert_node_is_branch(root, node_id=0, children_count=2)
         self.assert_node_is_leaf(root.children[0], node_id=1)
@@ -42,7 +42,7 @@ class TreeBuildingTest(unittest.TestCase):
             Record(1, 0),
             Record(0, 0)
         ]
-        root = BuildTree(records)
+        root = build_tree(records)
 
         self.assert_node_is_branch(root, node_id=0, children_count=2)
         self.assert_node_is_leaf(root.children[0], node_id=1)
@@ -55,7 +55,7 @@ class TreeBuildingTest(unittest.TestCase):
             Record(2, 0),
             Record(3, 0)
         ]
-        root = BuildTree(records)
+        root = build_tree(records)
 
         self.assert_node_is_branch(root, node_id=0, children_count=3)
         self.assert_node_is_leaf(root.children[0], node_id=1)
@@ -72,7 +72,7 @@ class TreeBuildingTest(unittest.TestCase):
             Record(5, 2),
             Record(1, 0)
         ]
-        root = BuildTree(records)
+        root = build_tree(records)
 
         self.assert_node_is_branch(root, 0, 2)
         self.assert_node_is_branch(root.children[0], 1, 2)
@@ -92,7 +92,7 @@ class TreeBuildingTest(unittest.TestCase):
             Record(5, 1),
             Record(6, 2),
         ]
-        root = BuildTree(records)
+        root = build_tree(records)
 
         self.assert_node_is_branch(root, 0, 2)
         self.assert_node_is_branch(root.children[0], 1, 3)
@@ -109,7 +109,7 @@ class TreeBuildingTest(unittest.TestCase):
         ]
         # Root parent_id should be equal to record_id(0)
         with self.assertRaises(ValueError) as err:
-            BuildTree(records)
+            build_tree(records)
         self.assertEqual(type(err.exception), ValueError)
         self.assertEqual(err.exception.args[0], "Node parent_id should be smaller than its record_id.")
 
@@ -120,7 +120,7 @@ class TreeBuildingTest(unittest.TestCase):
         ]
         # Record with record_id 0 (root) is missing
         with self.assertRaises(ValueError) as err:
-            BuildTree(records)
+            build_tree(records)
         self.assertEqual(type(err.exception), ValueError)
         self.assertEqual(err.exception.args[0], "Record id is invalid or out of order.")
 
@@ -133,7 +133,7 @@ class TreeBuildingTest(unittest.TestCase):
         ]
         # Record with record_id 3 is missing
         with self.assertRaises(ValueError) as err:
-            BuildTree(records)
+            build_tree(records)
         self.assertEqual(type(err.exception), ValueError)
         self.assertEqual(err.exception.args[0], "Record id is invalid or out of order.")
 
@@ -149,7 +149,7 @@ class TreeBuildingTest(unittest.TestCase):
         ]
         # Cycle caused by Record 2 with parent_id pointing to itself
         with self.assertRaises(ValueError) as err:
-            BuildTree(records)
+            build_tree(records)
         self.assertEqual(type(err.exception), ValueError)
         self.assertEqual(err.exception.args[0], "Only root should have equal record and parent id.")
 
@@ -165,7 +165,7 @@ class TreeBuildingTest(unittest.TestCase):
         ]
         # Cycle caused by Record 2 with parent_id(6) greater than record_id(2)
         with self.assertRaises(ValueError) as err:
-            BuildTree(records)
+            build_tree(records)
         self.assertEqual(type(err.exception), ValueError)
         self.assertEqual(err.exception.args[0], "Node parent_id should be smaller than its record_id.")
 
@@ -177,7 +177,7 @@ class TreeBuildingTest(unittest.TestCase):
         ]
         # Record 1 have parent_id(2) greater than record_id(1)
         with self.assertRaises(ValueError) as err:
-            BuildTree(records)
+            build_tree(records)
         self.assertEqual(type(err.exception), ValueError)
         self.assertEqual(err.exception.args[0], "Node parent_id should be smaller than its record_id.")
 
