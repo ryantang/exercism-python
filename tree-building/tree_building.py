@@ -12,7 +12,7 @@ class Record:
 class Node:
     """Represents a node in a tree, with an ID and a list of child nodes."""
     node_id: int
-    children: list["Node"] = field(default_factory=list)
+    children: list['Node'] = field(default_factory=list)
 
 
 def build_tree(records: list[Record]) -> Node | None:
@@ -49,3 +49,6 @@ def build_tree(records: list[Record]) -> Node | None:
         nodes[record.parent_id].children.append(new_node)
 
     return nodes[0]
+
+# enable exercism tests to pass
+BuildTree = build_tree
