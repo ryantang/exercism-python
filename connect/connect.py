@@ -3,10 +3,21 @@ from collections import namedtuple
 Point = namedtuple('Point', ('row_index', 'col_index'))
 
 class ConnectGame:
+    """Represents a Hex/Polygon board and determines the winner."""
+
     PLAYER_X = 'X'
     PLAYER_O = 'O'
+    DELTAS = (
+        Point(0, 1),
+        Point(0, -1),
+        Point(1, 0),
+        Point(-1, 0),
+        Point(-1, 1),
+        Point(1, -1)
+    )
 
-    def __init__(self, board):
+    def __init__(self, board: str) -> None:
+        """Parse the board string into a 2D matrix of cell values."""
         rows = board.split('\n')
         self.matrix = [
             list(row.split())
@@ -16,7 +27,8 @@ class ConnectGame:
         self.board_height = len(self.matrix)
         self.board_width = len(self.matrix[0])
 
-    def get_winner(self):
+    def get_winner(self) -> str:
+        """Return 'X' if X has won, 'O' if O has won, or '' if there is no winner."""
         x_left_edge = (
             Point(row_index=row_index, col_index=0)
             for row_index, row in enumerate(self.matrix)
@@ -24,7 +36,7 @@ class ConnectGame:
         )
 
         for start_node in x_left_edge:
-            if self._complete_path(self.PLAYER_X, [start_node]):
+            if self._complete_path(self.PLAYER_X, start_node):
                 return self.PLAYER_X
 
         o_top_edge = (
@@ -34,39 +46,47 @@ class ConnectGame:
         )
 
         for start_node in o_top_edge:
-            if self._complete_path(self.PLAYER_O, [start_node]):
+            if self._complete_path(self.PLAYER_O, start_node):
                 return self.PLAYER_O
 
         return ''
 
 
-    def _complete_path(self, player, path):
-        # Win conditions
-        current_node = path[-1]
-        if player == self.PLAYER_X and current_node.col_index == self.board_width - 1:
-            return True
-        if player == self.PLAYER_O and current_node.row_index == self.board_height - 1:
-            return True
+    def _complete_path(self, player: str, start_node: Point) -> bool:
+        """Return True if a path exists from start_node to the player's winning edge."""
+        visited = set()
+        stack = [start_node]
 
-        possible_next_nodes = self._neighbors(current_node, player) - set(path)
-        for node in possible_next_nodes:
-            if self._complete_path(player, path + [node]):
+        while stack:
+            node = stack.pop()
+
+            # Avoid loops
+            if node in visited:
+                continue
+
+            if self._win_conditions(player, node):
                 return True
+
+            visited.add(node)
+            for neighbor in self._neighbors(node, player):
+                if neighbor not in visited:
+                    stack.append(neighbor)
 
         return False
 
-    def _neighbors(self, node, player):
-        deltas = (
-            Point(0, 1),
-            Point(0, -1),
-            Point(1, 0),
-            Point(-1, 0),
-            Point(-1, 1),
-            Point(1, -1)
-        )
 
+    def _win_conditions(self, player: str, node: Point) -> bool:
+        """Return True if the given node satisfies the win condition for the given player."""
+        x_win = (player == self.PLAYER_X and node.col_index == self.board_width - 1)
+        o_win = (player == self.PLAYER_O and node.row_index == self.board_height - 1)
+
+        return x_win or o_win
+
+
+    def _neighbors(self, node: Point, player: str) -> set[Point]:
+        """Return the set of adjacent nodes occupied by the given player."""
         neighbors = set()
-        for delta in deltas:
+        for delta in self.DELTAS:
             candidate = Point(
                 row_index = node.row_index + delta.row_index,
                 col_index = node.col_index + delta.col_index
@@ -77,6 +97,8 @@ class ConnectGame:
 
         return neighbors
 
-    def _on_board(self, node):
-        return  (0 <= node.row_index < self.board_height
-                    and 0 <= node.col_index < self.board_width)
+
+    def _on_board(self, node: Point) -> bool:
+        """Return True if the given node is within the board boundaries."""
+        return (0 <= node.row_index < self.board_height
+                and 0 <= node.col_index < self.board_width)
