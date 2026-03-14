@@ -1,5 +1,3 @@
-from functools import reduce
-
 def rebase(input_base: int, digits: list[int], output_base: int) -> list[int]:
     """Convert digits from input_base to output_base."""
     if input_base < 2:
