@@ -1,3 +1,5 @@
+from functools import reduce
+
 def rebase(input_base: int, digits: list[int], output_base: int) -> list[int]:
     """Convert digits from input_base to output_base."""
     if input_base < 2:
@@ -26,7 +28,8 @@ def _convert_from_base_ten(output_base: int, base_ten_value: int) -> list[int]:
 
 def _convert_to_base_ten(input_base: int, digits: list[int]) -> int:
     """Convert a list of digits in input_base to a base-10 integer."""
-    return sum(
-        digit * (input_base ** place)
-        for place, digit in enumerate(reversed(digits))
-    )
+    value = 0
+    for digit in digits:
+        value = value * input_base + digit
+
+    return value
