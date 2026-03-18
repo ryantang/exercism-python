@@ -2,62 +2,103 @@ from datetime import date, time, datetime, timedelta
 import re
 import calendar
 
-def delivery_date(start, description):
-    dt_format = "%Y-%m-%dT%H:%M:%S"
-    meeting_start = datetime.strptime(start, dt_format)
-    tomorrow = meeting_start.date() + timedelta(days=1)
-    five_pm = time(17, 0)
-    one_pm = time(13, 0)
-    eight_pm = time(20, 0)
-    # eight_am = time(8, 0)
+# Q1: March, Q2: June, etc.
+QUARTER_LAST_MONTH_MAPPING = {
+    1: 3,
+    2: 6,
+    3: 9,
+    4: 12,
+}
+
+EIGHT_AM = time(8, 0)
+ONE_PM = time(13, 0)
+FIVE_PM = time(17, 0)
+EIGHT_PM = time(20, 0)
+
+WEDNESDAY = 2
+FRIDAY = 4
+SATURDAY = 5
+SUNDAY = 6
+
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+
+
+def _handle_eow(meeting_start: datetime) -> datetime:
+    """Calculate the end-of-week due date."""
+    if meeting_start.weekday() <= WEDNESDAY:
+        day_of_week_due, time_due = FRIDAY, FIVE_PM
+    else:
+        day_of_week_due, time_due = SUNDAY, EIGHT_PM
+
+    days_til_due = day_of_week_due - meeting_start.weekday()
+    date_due = meeting_start + timedelta(days=days_til_due)
+    return datetime.combine(date_due.date(), time_due)
+
+def _handle_asap(meeting_start: datetime) -> datetime:
+    """Calculate the 'as soon as possible' due date."""
+    if meeting_start.time() < ONE_PM:
+        return datetime.combine(meeting_start.date(), FIVE_PM)
+
+    return datetime.combine(meeting_start.date() + timedelta(days=1), ONE_PM)
+
+def _handle_now(meeting_start: datetime) -> datetime:
+    """Calculate the 'now' due date (2 hours from start)."""
+    return meeting_start + timedelta(hours=2)
+
+
+
+HANDLERS = {
+    "NOW": _handle_now,
+    "ASAP": _handle_asap,
+    "EOW": _handle_eow,
+}
+
+def delivery_date(start: str, description: str) -> str:
+    """Calculate the delivery date based on a start date and description.
+
+    :param start: A string representing the start datetime in ISO format.
+    :param description: A string code describing the delivery urgency.
+    :return: A string representing the calculated due datetime in ISO format.
+    """
+    meeting_start = datetime.strptime(start, DATETIME_FORMAT)
 
     month_match = re.search(r"(\d+)M", description)
+    if month_match:
+        datetime_due = _first_workday_of_month(meeting_start, int(month_match.group(1)))
+        return datetime_due.strftime(DATETIME_FORMAT)
+
     quarter_match = re.search(r"Q(\d)", description)
+    if quarter_match:
+        datetime_due = _last_workday_of_quarter(meeting_start, int(quarter_match.group(1)))
+        return datetime_due.strftime(DATETIME_FORMAT)
 
-    if description == "NOW":
-        datetime_due = meeting_start + timedelta(hours=2)
-    elif description == "ASAP" and meeting_start.time() < one_pm:
-        datetime_due = datetime.combine(meeting_start.date(), five_pm)
-    elif description == "ASAP" and meeting_start.time() >= one_pm:
-        datetime_due = datetime.combine(tomorrow, one_pm)
-    elif description == "EOW" and meeting_start.weekday() in (0, 1, 2):
-        days_til_fri = 4 - meeting_start.weekday()
-        friday = meeting_start + timedelta(days=days_til_fri)
-        datetime_due = datetime.combine(friday.date(), five_pm)
-    elif description == "EOW":
-        days_til_sun = 6 - meeting_start.weekday()
-        sunday = meeting_start + timedelta(days=days_til_sun)
-        datetime_due = datetime.combine(sunday.date(), eight_pm)
-    elif month_match:
-        print(f"scheduling for the last day of month {month_match.group(1)}")
-        datetime_due = _first_workday(meeting_start, int(month_match.group(1)))
-    elif quarter_match:
-        print(f"scheduling for the last day of month {quarter_match.group(1)}")
-        datetime_due = _last_workday(meeting_start, int(quarter_match.group(1)))
+    func = HANDLERS.get(description)
+    if not func:
+        raise ValueError("Description doesn't match boss' code")
+    datetime_due = func(meeting_start)
+    return datetime_due.strftime(DATETIME_FORMAT)
 
 
-    return datetime_due.strftime(dt_format)
-
-def _first_workday(meeting_start, month):
+def _first_workday_of_month(meeting_start: datetime, month: int) -> datetime:
+    """Calculate the first workday of a given month."""
     if meeting_start.month < month:
         year = meeting_start.year
     else:
         year = meeting_start.year + 1
-    
-    first_of_month = date(year, month, 1)
-    
-    if first_of_month.weekday() < 5: # Mon - Fri
-        first_workday = first_of_month
-    elif first_of_month.weekday() == 5: # Sat
-        first_workday = date(year, month, 3)
-    else: # Sun
-        first_workday = date(year, month, 2)
-    
-    return datetime.combine(first_workday, time(8, 0))
 
-def _last_workday(meeting_start, quarter_due):
-    quarter_month_mapping = {1: 3, 2: 6, 3: 9, 4: 12}
-    month_due = quarter_month_mapping[quarter_due]
+    first_of_month = date(year, month, 1)
+
+    days_til_workday = 0
+    if first_of_month.weekday() == SATURDAY:
+        days_til_workday = 2
+    elif first_of_month.weekday() == SUNDAY:
+        days_til_workday = 1
+
+    return datetime.combine(first_of_month + timedelta(days=days_til_workday) , EIGHT_AM)
+
+def _last_workday_of_quarter(meeting_start: datetime, quarter_due: int) -> datetime:
+    """Calculate the last workday of a given quarter."""
+    month_due = QUARTER_LAST_MONTH_MAPPING[quarter_due]
 
     current_quarter = (meeting_start.month - 1)//3 + 1
     if current_quarter > quarter_due:
@@ -67,11 +108,11 @@ def _last_workday(meeting_start, quarter_due):
 
     _, day_of_month = calendar.monthrange(year, month_due)
     last_of_month = date(year, month_due, day_of_month)
-    if last_of_month.weekday() < 5: # Mon - Fri
-        last_day = date(year, month_due, day_of_month)
-    elif last_of_month.weekday() == 5: # Sat
-        last_day = date(year, month_due, day_of_month - 1)
-    else: # Sun
-        last_day = date(year, month_due, day_of_month - 2)
 
-    return datetime.combine(last_day, time(8, 0))
+    days_past_last_workday = 0
+    if last_of_month.weekday() == SATURDAY:
+        days_past_last_workday = 1
+    elif last_of_month.weekday() == SUNDAY:
+        days_past_last_workday = 2
+
+    return datetime.combine(last_of_month - timedelta(days=days_past_last_workday), EIGHT_AM)
