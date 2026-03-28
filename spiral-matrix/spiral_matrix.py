@@ -14,15 +14,14 @@ def spiral_matrix(size):
         for _ in range(size)
     ]
 
-    current_cell = Cell(0, -1)
+    current_cell = Cell(0, 0)
     step = 1
     direction = RIGHT
 
-    print(f'matrix is {matrix}')
-
-    while _next_cell_empty(matrix, current_cell, direction):
+    while _within_matrix(matrix, current_cell) and _cell_empty(matrix, current_cell):
         current_cell, step = _fill_to_end(matrix, current_cell, step, direction)
         direction = _turn_right(direction)
+        current_cell = _next_cell(current_cell, direction)
 
     return matrix
 
@@ -33,32 +32,35 @@ def _turn_right(direction):
 
 
 def _fill_to_end(matrix, current_cell, step, direction):
-    if not _next_cell_empty(matrix, current_cell, direction):
+    if not _cell_empty(matrix, current_cell):
         return (current_cell, step)
 
-    next_cell = Cell(
-        row_index = current_cell.row_index + direction[0],
-        col_index = current_cell.col_index + direction[1]
-    )
-
-    matrix[next_cell.row_index][next_cell.col_index] = step
+    matrix[current_cell.row_index][current_cell.col_index] = step
     step += 1
-    current_cell = next_cell
 
+    next_cell = _next_cell(current_cell, direction)
+
+    if not _within_matrix(matrix, next_cell) or not _cell_empty(matrix, next_cell):
+        return (current_cell, step)
+
+    current_cell = next_cell
     print(f'current_cell is {current_cell}')
     print(f'matrix is {matrix}\n')
 
     return _fill_to_end(matrix, current_cell, step, direction)
 
 
+def _cell_empty(matrix: list[list[int|None]], cell: tuple[int, int]) -> bool:
+    return matrix[cell.row_index][cell.col_index] is None
 
-def _next_cell_empty(matrix: list[list[int|None]], current_cell: tuple[int, int], direction: str) -> bool:
+def _within_matrix(matrix, cell) -> bool:
     size = len(matrix)
+    return cell.row_index < size and cell.col_index < size
 
-    next_cell = Cell(
+def _next_cell(current_cell, direction):
+    potential_next_cell = Cell(
         row_index = current_cell.row_index + direction[0],
         col_index = current_cell.col_index + direction[1]
     )
 
-    return (next_cell.row_index < size and next_cell.col_index < size and
-        matrix[next_cell.row_index][next_cell.col_index] is None)
+    return potential_next_cell
