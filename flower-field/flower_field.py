@@ -32,13 +32,13 @@ def annotate(garden: list[str]) -> list[str]:
     num_cols = len(garden[0])
 
     if _unequal_columns(garden) or _has_invalid_character(garden):
-        raise ValueError("The board is invalid with current input.")
+        raise ValueError('The board is invalid with current input.')
 
     matrix = [list(row) for row in garden]
 
     for row_ind, row in enumerate(garden):
         for col_ind, cell in enumerate(row):
-            if cell != "*":
+            if cell != '*':
                 matrix[row_ind][col_ind] = _fill(num_rows, num_cols, matrix, row_ind, col_ind)
 
     return [''.join(row) for row in matrix]
