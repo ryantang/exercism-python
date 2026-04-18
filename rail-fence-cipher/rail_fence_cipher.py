@@ -3,29 +3,23 @@ UP = 1
 DOWN = -1
 
 def encode(message, rails):
-    rail_num = _zigzag(rails, len(message))
+    rail_index = _generate_rail_index(rails, len(message))
     by_rail = [[] for _ in range(rails)]
 
-    for index, char in enumerate(message):
-        by_rail[rail_num[index]- 1].append(char)
+    for char_index, char in enumerate(message):
+        by_rail[rail_index[char_index]].append(char)
 
-    return ''.join([
-        ''.join(row)
-        for row in by_rail
-    ])
+    return ''.join(''.join(row) for row in by_rail)
 
 
 
 def decode(encoded_message, rails):
     length = len(encoded_message)
-    rail_num = _zigzag(rails, length)
+    rail_num = _generate_rail_index(rails, length)
     by_rail = [None for _ in range(rails)]
 
     k = length//(2 * (rails - 1))
     remainder = length - (2 * k * (rails - 1))
-    print(f'k and length is {k} and {length}')
-    print(f'remainder is {remainder}')
-
     rail_length=[None] * rails
 
     for i in range(rails):
@@ -58,27 +52,28 @@ def decode(encoded_message, rails):
     message = []
 
     for rail in rail_num:
-        message.append(by_rail[rail - 1].popleft())
+        message.append(by_rail[rail].popleft())
 
     return ''.join(message)
 
 
-def _zigzag(rails, count):
+def _generate_rail_index(rails, count):
     if rails < 0:
-        raise ValueError("rails must be greater than 1")
+        raise ValueError("rails must be greater than or equal to 1")
     if rails == 1:
-        return [1] * count
+        return [0] * count
 
     direction = UP
-    result = [None] * count
-    result[0] = 1
+    rail_indices = [None] * count
+    rail_indices[0] = 0
 
     for i in range(1, count):
-        if result[i - 1] == 1 and direction == DOWN:
+        previous_rail = rail_indices[i -1]
+        if previous_rail == 0:
             direction = UP
-        if result[i - 1] == rails and direction == UP:
+        elif previous_rail == rails - 1:
             direction = DOWN
 
-        result[i] = result[i - 1] + direction
+        rail_indices[i] = previous_rail + direction
 
-    return result
+    return rail_indices
