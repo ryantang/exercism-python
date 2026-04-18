@@ -12,15 +12,29 @@ def encode(message, rails):
     return ''.join(''.join(row) for row in by_rail)
 
 
-
 def decode(encoded_message, rails):
     length = len(encoded_message)
-    rail_num = _generate_rail_index(rails, length)
-    by_rail = [None for _ in range(rails)]
+    rail_indices = _generate_rail_index(rails, length)
+    chars_per_rail = _calculate_chars_per_rail(length, rails)
 
-    k = length//(2 * (rails - 1))
-    remainder = length - (2 * k * (rails - 1))
-    rail_length=[None] * rails
+    by_rail = [None] * rails
+
+    for i in range(rails):
+        start = sum(chars_per_rail[j] for j in range(i))
+        end = start + chars_per_rail[i]
+        by_rail[i] = deque(encoded_message[start:end])
+
+    message = (
+        by_rail[rail_index].popleft()
+        for rail_index in rail_indices
+    )
+
+    return ''.join(message)
+
+def _calculate_chars_per_rail(message_length, rails):
+    k = message_length//(2 * (rails - 1))
+    remainder = message_length - (2 * k * (rails - 1))
+    chars_per_rail=[None] * rails
 
     for i in range(rails):
         if i in (0, rails - 1): #top or bottom rail
@@ -34,28 +48,9 @@ def decode(encoded_message, rails):
             if remainder > (rails - 1 + (rails - 1 - i)):
                 extra +=1
 
-        rail_length[i] = base + extra
+        chars_per_rail[i] = base + extra
 
-    print(f'rail_length is {rail_length}')
-
-    by_rail = [None] * rails
-    for i in range(rails):
-        if i == 0:
-            by_rail[i] = deque(encoded_message[:rail_length[i]])
-        else:
-            start = sum(rail_length[j] for j in range(i))
-            end = start + rail_length[i]
-            by_rail[i] = deque(encoded_message[start:end])
-
-    print(f'by_rail is {by_rail}')
-
-    message = []
-
-    for rail in rail_num:
-        message.append(by_rail[rail].popleft())
-
-    return ''.join(message)
-
+    return chars_per_rail
 
 def _generate_rail_index(rails, count):
     if rails < 0:
