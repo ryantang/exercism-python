@@ -65,24 +65,24 @@ def _base_chars(full_cycles: int, rail: int, rails: int) -> int:
     return 2 * full_cycles
 
 
-def _generate_rail_index(rails: int, count: int) -> list[int]:
+def _generate_rail_index(rails: int, message_length: int) -> list[int]:
     """Generate the sequence of rail indices for the zigzag pattern."""
     if rails < 0:
-        raise ValueError("rails must be greater than or equal to 1")
+        raise ValueError('rails must be greater than or equal to 1')
     if rails == 1:
-        return [0] * count
+        return [0] * message_length
 
     direction = UP
-    rail_indices = [None] * count
+    rail_indices = [None] * message_length
     rail_indices[0] = 0
 
-    for i in range(1, count):
-        previous_rail = rail_indices[i -1]
+    for char_index in range(1, message_length):
+        previous_rail = rail_indices[char_index - 1]
         if previous_rail == 0:
             direction = UP
         elif previous_rail == rails - 1:
             direction = DOWN
 
-        rail_indices[i] = previous_rail + direction
+        rail_indices[char_index] = previous_rail + direction
 
     return rail_indices
