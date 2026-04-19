@@ -2,7 +2,7 @@ from collections import deque
 UP = 1
 DOWN = -1
 
-def encode(message, rails):
+def encode(message: str, rails: int) -> str:
     rail_index = _generate_rail_index(rails, len(message))
     by_rail = [[] for _ in range(rails)]
 
@@ -12,47 +12,53 @@ def encode(message, rails):
     return ''.join(''.join(row) for row in by_rail)
 
 
-def decode(encoded_message, rails):
+def decode(encoded_message: str, rails: int) -> str:
     length = len(encoded_message)
     rail_indices = _generate_rail_index(rails, length)
     chars_per_rail = _calculate_chars_per_rail(length, rails)
 
-    by_rail = [None] * rails
-
-    for i in range(rails):
-        start = sum(chars_per_rail[j] for j in range(i))
-        end = start + chars_per_rail[i]
-        by_rail[i] = deque(encoded_message[start:end])
+    rails_content = [None] * rails
+    for rail_index in range(rails):
+        start = sum(chars_per_rail[prev_rail_index] for prev_rail_index in range(rail_index))
+        end = start + chars_per_rail[rail_index]
+        rails_content[rail_index] = deque(encoded_message[start:end])
 
     message = (
-        by_rail[rail_index].popleft()
+        rails_content[rail_index].popleft()
         for rail_index in rail_indices
     )
 
     return ''.join(message)
 
-def _calculate_chars_per_rail(message_length, rails):
-    k = message_length//(2 * (rails - 1))
-    remainder = message_length - (2 * k * (rails - 1))
-    chars_per_rail=[None] * rails
+def _calculate_chars_per_rail(message_length: int, rails:int) -> list[int]:
+    cycle_len = 2 * (rails - 1)
+    full_cycles = message_length // cycle_len
+    remaining_chars = message_length % cycle_len
 
-    for i in range(rails):
-        if i in (0, rails - 1): #top or bottom rail
-            base = k
-            extra = 1 if remainder > i else 0
-        else: #middle rail
-            base = 2 * k
-            extra = 0
-            if remainder > i:
-                extra += 1
-            if remainder > (rails - 1 + (rails - 1 - i)):
-                extra +=1
-
-        chars_per_rail[i] = base + extra
+    chars_per_rail = [
+        _base_chars(full_cycles, rail, rails) + _extra_chars(remaining_chars, rail, rails)
+        for rail in range(rails)
+    ]
 
     return chars_per_rail
 
-def _generate_rail_index(rails, count):
+def _extra_chars(remaining_chars: int, rail: int, rails: int) -> int:
+    last_rail = rails - 1
+    steps_up_from_last_rail = last_rail - rail
+
+    if remaining_chars <= rail:
+        return 0
+    if remaining_chars > last_rail + steps_up_from_last_rail:
+        return 2
+    return 1
+
+
+def _base_chars(full_cycles: int, rail: int, rails: int) -> int:
+    first_or_last_rail = (0, rails - 1)
+    return full_cycles if rail in first_or_last_rail else 2 * full_cycles
+
+
+def _generate_rail_index(rails: int, count: int) -> list[int]:
     if rails < 0:
         raise ValueError("rails must be greater than or equal to 1")
     if rails == 1:
