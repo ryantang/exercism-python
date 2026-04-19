@@ -2,7 +2,9 @@ from collections import deque
 UP = 1
 DOWN = -1
 
+
 def encode(message: str, rails: int) -> str:
+    """Encode a message using the rail fence cipher."""
     rail_index = _generate_rail_index(rails, len(message))
     by_rail = [[] for _ in range(rails)]
 
@@ -13,6 +15,7 @@ def encode(message: str, rails: int) -> str:
 
 
 def decode(encoded_message: str, rails: int) -> str:
+    """Decode a message using the rail fence cipher."""
     length = len(encoded_message)
     rail_indices = _generate_rail_index(rails, length)
     chars_per_rail = _calculate_chars_per_rail(length, rails)
@@ -31,6 +34,7 @@ def decode(encoded_message: str, rails: int) -> str:
     return ''.join(message)
 
 def _calculate_chars_per_rail(message_length: int, rails:int) -> list[int]:
+    """Calculate how many characters belong to each rail."""
     cycle_len = 2 * (rails - 1)
     full_cycles = message_length // cycle_len
     remaining_chars = message_length % cycle_len
@@ -43,6 +47,7 @@ def _calculate_chars_per_rail(message_length: int, rails:int) -> list[int]:
     return chars_per_rail
 
 def _extra_chars(remaining_chars: int, rail: int, rails: int) -> int:
+    """Calculate extra characters for a rail from the incomplete final cycle."""
     last_rail = rails - 1
     steps_up_from_last_rail = last_rail - rail
 
@@ -54,11 +59,14 @@ def _extra_chars(remaining_chars: int, rail: int, rails: int) -> int:
 
 
 def _base_chars(full_cycles: int, rail: int, rails: int) -> int:
-    first_or_last_rail = (0, rails - 1)
-    return full_cycles if rail in first_or_last_rail else 2 * full_cycles
+    """Calculate the base number of characters for a rail from full cycles."""
+    if rail == 0 or rail == rails -1:
+        return full_cycles
+    return 2 * full_cycles
 
 
 def _generate_rail_index(rails: int, count: int) -> list[int]:
+    """Generate the sequence of rail indices for the zigzag pattern."""
     if rails < 0:
         raise ValueError("rails must be greater than or equal to 1")
     if rails == 1:
