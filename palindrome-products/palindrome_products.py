@@ -1,6 +1,8 @@
 from collections import namedtuple
 
 Product = namedtuple('Product', ['value', 'factor1', 'factor2'])
+INCREASING = 1
+DECREASING = -1
 
 def largest(min_factor, max_factor):
     """Given a range of numbers, find the largest palindromes which
@@ -12,12 +14,11 @@ def largest(min_factor, max_factor):
              Iterable should contain both factors of the palindrome in an arbitrary order.
     """
     if min_factor > max_factor:
-        raise ValueError("min must be <= max")
+        raise ValueError('min must be <= max')
 
-    for product in _products_decreasing(min_factor, max_factor):
+    for product in _products(DECREASING, min_factor, max_factor):
         if _is_palindrome(product.value):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
-            print(f"answer is {answer}")
             return answer
         
     return [None, []]
@@ -32,13 +33,12 @@ def smallest(min_factor, max_factor):
     Iterable should contain both factors of the palindrome in an arbitrary order.
     """
     if min_factor > max_factor:
-        raise ValueError("min must be <= max")
+        raise ValueError('min must be <= max')
 
 
-    for product in _products_increasing(min_factor, max_factor):
+    for product in _products(INCREASING, min_factor, max_factor):
         if _is_palindrome(product.value):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
-            print(f"answer is {answer}")
             return answer
         
     return [None, []]
@@ -54,54 +54,53 @@ def _factors(product, min_factor, max_factor):
 def _is_palindrome(product):
     return product == int(str(product)[::-1])
         
-def _products_increasing(min_factor, max_factor):
-    lowest_product = Product(value=min_factor*min_factor,factor1=min_factor, factor2=min_factor)
-    products = [lowest_product]
+def _products(direction, min_factor, max_factor):
+    if direction == INCREASING:
+        products = [_product_with(min_factor)]
+    elif direction == DECREASING:
+        products = [_product_with(max_factor)]
+    else:
+        raise ValueError('direction must be INCREASING (1) or DECREASING (-1)')
+
     while products:
-        products.sort(key=lambda p: p.value, reverse=True)
+        if direction == INCREASING:
+            products.sort(key=lambda p: p.value, reverse=True)
+        elif direction == DECREASING:
+            products.sort(key=lambda p: p.value)
         product = products.pop()
-        print(f'product is {product}')
         yield product
 
-        if product.factor2 < max_factor:
-            right_factor1 = product.factor1
-            right_factor2 = product.factor2 + 1
-            right_product_val = right_factor1 * right_factor2
-            print(f'right_product_val is {right_product_val}')
+        horizontal_neighbor = _horizontal_neighbor(product, max_factor, direction)
+        if horizontal_neighbor and not any(p.value == horizontal_neighbor.value for p in products):
+            products.append(horizontal_neighbor)
 
-            if not any(p.value == right_product_val for p in products):
-                right_product = Product(value=right_product_val,factor1=right_factor1,factor2=right_factor2)
-                products.append(right_product)
-        if product.factor1 < product.factor2:
-            up_factor1 = product.factor1 + 1
-            up_factor2 = product.factor2
-            up_product_val = up_factor1 * up_factor2
-            if not any(p.value == up_product_val for p in products):
-                up_product = Product(value=up_product_val, factor1=up_factor1, factor2=up_factor2)
-                products.append(up_product)
+        vertical_neighbor = _vertical_neighbor(product, min_factor, direction)
+        if vertical_neighbor and not any(p.value == vertical_neighbor.value for p in products):
+            products.append(vertical_neighbor)
 
+def _product_with(factor):
+    return Product (value=factor*factor, factor1=factor, factor2=factor)
 
-def _products_decreasing(min_factor, max_factor):
-    highest_product = Product(value=max_factor*max_factor,factor1=max_factor, factor2=max_factor)
-    products = [highest_product]
-    while products:
-        products.sort(key=lambda p: p.value)
-        product = products.pop()
-        print(f'product is {product}')
-        yield product
+def _horizontal_neighbor(previous, max_factor, direction):
+    if direction == INCREASING and previous.factor2 >= max_factor:
+        return None
+    if direction == DECREASING and previous.factor1 >= previous.factor2:
+        return None
 
-        if product.factor2 > min_factor:
-            down_factor1 = product.factor1
-            down_factor2 = product.factor2 - 1
-            down_product_val = down_factor1 * down_factor2
-            if not any(p.value == down_product_val for p in products):
-                down_product = Product(value=down_product_val,factor1=down_factor1,factor2=down_factor2)
-                products.append(down_product)
+    return Product(
+        value = previous.factor1 * (previous.factor2 + direction), 
+        factor1 = previous.factor1, 
+        factor2 = previous.factor2 + direction
+        )
 
-        if product.factor1 > product.factor2:
-            left_factor1 = product.factor1 - 1
-            left_factor2 = product.factor2
-            left_product_val = left_factor1 * left_factor2
-            if not any(p.value == left_product_val for p in products):
-                left_product = Product(value=left_product_val, factor1=left_factor1, factor2=left_factor2)
-                products.append(left_product)
+def _vertical_neighbor(previous, min_factor, direction):
+    if direction == DECREASING and previous.factor1 <= min_factor:
+        return None
+    if direction == INCREASING and previous.factor1 >= previous.factor2:
+        return None
+    
+    return Product(
+        value = (previous.factor1 + direction) * previous.factor2,
+        factor1 = previous.factor1 + direction,
+        factor2 = previous.factor2
+    )
