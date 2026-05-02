@@ -17,7 +17,7 @@ def largest(min_factor, max_factor):
     if min_factor > max_factor:
         raise ValueError('min must be <= max')
 
-    for product in _products(DECREASING, min_factor, max_factor):
+    for product in _products_decreasing(min_factor, max_factor):
         if _is_palindrome(product.value):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
             return answer
@@ -37,7 +37,7 @@ def smallest(min_factor, max_factor):
         raise ValueError('min must be <= max')
 
 
-    for product in _products(INCREASING, min_factor, max_factor):
+    for product in _products_increasing(min_factor, max_factor):
         if _is_palindrome(product.value):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
             return answer
@@ -55,64 +55,75 @@ def _factors(product, min_factor, max_factor):
 def _is_palindrome(product):
     return product == int(str(product)[::-1])
 
-def _products(direction, min_factor, max_factor):
-    if direction == INCREASING:
-        product = _product_with(min_factor)
-    elif direction == DECREASING:
-        product = _product_with(max_factor)
-    else:
-        raise ValueError('direction must be INCREASING (1) or DECREASING (-1)')
-
-    seen = {product.value}
-    products = [product]
+def _products_increasing(min_factor, max_factor):
+    lowest_product = _lowest_product(min_factor)
+    products = [lowest_product]
+    seen_values = {lowest_product.value}
 
     while products:
-        if direction == INCREASING:
-            product = heapq.heappop(products)
-        elif direction == DECREASING:
-            products.sort(key=lambda p: p.value)
-            product = products.pop()
+        product = heapq.heappop(products)
         yield product
 
-        horizontal_neighbor = _horizontal_neighbor(product, max_factor, direction)
-        if horizontal_neighbor and not horizontal_neighbor.value in seen:
-            seen.add(horizontal_neighbor.value)
-            if direction == INCREASING:
-                heapq.heappush(products, horizontal_neighbor)
-            else:
-                products.append(horizontal_neighbor)
+        for next_product in _next_products(product, INCREASING):
+            if next_product.value in seen_values:
+                continue
+            if not _within_bounds(next_product, min_factor, max_factor):
+                continue
 
-        vertical_neighbor = _vertical_neighbor(product, min_factor, direction)
-        if vertical_neighbor and not vertical_neighbor.value in seen:
-            seen.add(vertical_neighbor.value)
-            if direction == INCREASING:
-                heapq.heappush(products, vertical_neighbor)
-            else:
-                products.append(vertical_neighbor)
+            seen_values.add(next_product.value)
+            heapq.heappush(products, next_product)
 
 def _product_with(factor):
     return Product (value=factor*factor, factor1=factor, factor2=factor)
 
-def _horizontal_neighbor(previous, max_factor, direction):
-    if direction == INCREASING and previous.factor2 >= max_factor:
-        return None
-    if direction == DECREASING and previous.factor1 >= previous.factor2:
-        return None
+def _products_decreasing(min_factor, max_factor):
+    highest_product = _highest_product(max_factor)
+    products = [highest_product]
+    seen_values = {highest_product.value}
 
+    while products:
+        products.sort(key=lambda p: p.value)
+        product = products.pop()
+        yield product
+
+        for next_product in _next_products(product, DECREASING):
+            if next_product.value in seen_values:
+                continue
+            if not _within_bounds(next_product, min_factor, max_factor):
+                continue
+
+            seen_values.add(next_product.value)
+            products.append(next_product)
+
+def _lowest_product(min_factor):
     return Product(
-        value = previous.factor1 * (previous.factor2 + direction), 
-        factor1 = previous.factor1, 
-        factor2 = previous.factor2 + direction
-        )
-
-def _vertical_neighbor(previous, min_factor, direction):
-    if direction == DECREASING and previous.factor1 <= min_factor:
-        return None
-    if direction == INCREASING and previous.factor1 >= previous.factor2:
-        return None
-
-    return Product(
-        value = (previous.factor1 + direction) * previous.factor2,
-        factor1 = previous.factor1 + direction,
-        factor2 = previous.factor2
+        value = min_factor * min_factor,
+        factor1 = min_factor,
+        factor2 = min_factor
     )
+
+def _highest_product(max_factor):
+    return Product(
+        value = max_factor * max_factor,
+        factor1 = max_factor,
+        factor2=max_factor
+    )
+
+def _next_products(product, direction):
+    next_in_row = Product(
+        value = product.factor1 * (product.factor2 + direction),
+        factor1 = product.factor1,
+        factor2 = product.factor2 + direction
+    )
+
+    next_in_col = Product(
+        value = (product.factor1 + direction) * product.factor2,
+        factor1 = product.factor1 + direction,
+        factor2 = product.factor2
+    )
+
+    return (next_in_row, next_in_col)
+
+def _within_bounds(product, min_factor, max_factor):
+    return (min_factor <= product.factor1 <= max_factor
+            and min_factor <= product.factor2 <= max_factor)
