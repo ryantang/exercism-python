@@ -1,3 +1,4 @@
+import heapq
 from collections import namedtuple
 
 Product = namedtuple('Product', ['value', 'factor1', 'factor2'])
@@ -40,7 +41,7 @@ def smallest(min_factor, max_factor):
         if _is_palindrome(product.value):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
             return answer
-        
+
     return [None, []]
 
 def _factors(product, min_factor, max_factor):
@@ -64,19 +65,25 @@ def _products(direction, min_factor, max_factor):
 
     while products:
         if direction == INCREASING:
-            products.sort(key=lambda p: p.value, reverse=True)
+            product = heapq.heappop(products)
         elif direction == DECREASING:
             products.sort(key=lambda p: p.value)
-        product = products.pop()
+            product = products.pop()
         yield product
 
         horizontal_neighbor = _horizontal_neighbor(product, max_factor, direction)
         if horizontal_neighbor and not any(p.value == horizontal_neighbor.value for p in products):
-            products.append(horizontal_neighbor)
+            if direction == INCREASING:
+                heapq.heappush(products, horizontal_neighbor)
+            else:
+                products.append(horizontal_neighbor)
 
         vertical_neighbor = _vertical_neighbor(product, min_factor, direction)
         if vertical_neighbor and not any(p.value == vertical_neighbor.value for p in products):
-            products.append(vertical_neighbor)
+            if direction == INCREASING:
+                heapq.heappush(products, vertical_neighbor)
+            else:
+                products.append(vertical_neighbor)
 
 def _product_with(factor):
     return Product (value=factor*factor, factor1=factor, factor2=factor)
