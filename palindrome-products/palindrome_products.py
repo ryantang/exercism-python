@@ -1,11 +1,15 @@
 import heapq
 from collections import namedtuple
+from typing import Iterator
+from typing import TypeAlias
 
+FactorPairs: TypeAlias = set[tuple[int,int]]
 Product = namedtuple('Product', ['value', 'factor1', 'factor2'])
 INCREASING = 1
 DECREASING = -1
 
-def largest(min_factor, max_factor):
+
+def largest(min_factor: int, max_factor: int) -> tuple[int|None, FactorPairs]:
     """Given a range of numbers, find the largest palindromes which
        are products of two numbers within that range.
 
@@ -22,9 +26,9 @@ def largest(min_factor, max_factor):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
             return answer
 
-    return [None, []]
+    return (None, [])
 
-def smallest(min_factor, max_factor):
+def smallest(min_factor: int, max_factor: int) -> tuple[int|None, FactorPairs]:
     """Given a range of numbers, find the smallest palindromes which
     are products of two numbers within that range.
 
@@ -42,9 +46,10 @@ def smallest(min_factor, max_factor):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
             return answer
 
-    return [None, []]
+    return (None, [])
 
-def _factors(product, min_factor, max_factor):
+def _factors(product: Product, min_factor: int, max_factor: int) -> FactorPairs:
+    """Find all factor pairs of a product within a given range."""
     factors = set()
     for factor in range(min_factor, max_factor + 1):
         if product % factor == 0 and min_factor <= product//factor <= max_factor:
@@ -52,11 +57,19 @@ def _factors(product, min_factor, max_factor):
 
     return factors
 
-def _is_palindrome(product):
+def _is_palindrome(product: Product) -> bool:
+    """Check if a number is a palindrome."""
     return product == int(str(product)[::-1])
 
-def _products_increasing(min_factor, max_factor):
-    lowest_product = _lowest_product(min_factor)
+def _products_increasing(min_factor: int, max_factor: int) -> Iterator[Product]:
+    """Generate products in increasing order, starting from the smallest.
+
+    This function implements a search algorithm that efficiently finds the
+    next smallest product at each step. It uses a min-heap to keep track
+    of candidate products, ensuring that the smallest available product is
+    always processed next. This avoids a full search of all possible products.
+    """
+    lowest_product = _square_of(min_factor)
     products = [lowest_product]
     seen_values = {lowest_product.value}
 
@@ -73,11 +86,13 @@ def _products_increasing(min_factor, max_factor):
             seen_values.add(next_product.value)
             heapq.heappush(products, next_product)
 
-def _product_with(factor):
-    return Product (value=factor*factor, factor1=factor, factor2=factor)
+def _products_decreasing(min_factor: int, max_factor: int) -> Iterator[Product]:
+    """Generate products in decreasing order, starting from the largest.
 
-def _products_decreasing(min_factor, max_factor):
-    highest_product = _highest_product(max_factor)
+    This function searches for products starting from the largest possible
+    value. This avoids a full search of all possible products.
+    """
+    highest_product = _square_of(max_factor)
     products = [highest_product]
     seen_values = {highest_product.value}
 
@@ -95,21 +110,16 @@ def _products_decreasing(min_factor, max_factor):
             seen_values.add(next_product.value)
             products.append(next_product)
 
-def _lowest_product(min_factor):
+def _square_of(factor: int) -> Product:
+    """Calculate the square of a factor."""
     return Product(
-        value = min_factor * min_factor,
-        factor1 = min_factor,
-        factor2 = min_factor
+        value = factor * factor,
+        factor1 = factor,
+        factor2 = factor
     )
 
-def _highest_product(max_factor):
-    return Product(
-        value = max_factor * max_factor,
-        factor1 = max_factor,
-        factor2=max_factor
-    )
-
-def _next_products(product, direction):
+def _next_products(product: Product, direction: int) -> tuple[Product]:
+    """Calculate the next two candidate products in the search grid."""
     next_in_row = Product(
         value = product.factor1 * (product.factor2 + direction),
         factor1 = product.factor1,
@@ -124,6 +134,7 @@ def _next_products(product, direction):
 
     return (next_in_row, next_in_col)
 
-def _within_bounds(product, min_factor, max_factor):
+def _within_bounds(product: Product, min_factor: int, max_factor: int) -> bool:
+    """Check if a product's factors are within the allowed range."""
     return (min_factor <= product.factor1 <= max_factor
             and min_factor <= product.factor2 <= max_factor)
