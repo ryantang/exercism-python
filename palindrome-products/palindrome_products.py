@@ -21,7 +21,7 @@ def largest(min_factor, max_factor):
         if _is_palindrome(product.value):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
             return answer
-        
+
     return [None, []]
 
 def smallest(min_factor, max_factor):
@@ -51,17 +51,20 @@ def _factors(product, min_factor, max_factor):
             factors.add(tuple(sorted((factor, product//factor))))
 
     return factors
-        
+
 def _is_palindrome(product):
     return product == int(str(product)[::-1])
-        
+
 def _products(direction, min_factor, max_factor):
     if direction == INCREASING:
-        products = [_product_with(min_factor)]
+        product = _product_with(min_factor)
     elif direction == DECREASING:
-        products = [_product_with(max_factor)]
+        product = _product_with(max_factor)
     else:
         raise ValueError('direction must be INCREASING (1) or DECREASING (-1)')
+
+    seen = {product.value}
+    products = [product]
 
     while products:
         if direction == INCREASING:
@@ -72,14 +75,16 @@ def _products(direction, min_factor, max_factor):
         yield product
 
         horizontal_neighbor = _horizontal_neighbor(product, max_factor, direction)
-        if horizontal_neighbor and not any(p.value == horizontal_neighbor.value for p in products):
+        if horizontal_neighbor and not horizontal_neighbor.value in seen:
+            seen.add(horizontal_neighbor.value)
             if direction == INCREASING:
                 heapq.heappush(products, horizontal_neighbor)
             else:
                 products.append(horizontal_neighbor)
 
         vertical_neighbor = _vertical_neighbor(product, min_factor, direction)
-        if vertical_neighbor and not any(p.value == vertical_neighbor.value for p in products):
+        if vertical_neighbor and not vertical_neighbor.value in seen:
+            seen.add(vertical_neighbor.value)
             if direction == INCREASING:
                 heapq.heappush(products, vertical_neighbor)
             else:
@@ -105,7 +110,7 @@ def _vertical_neighbor(previous, min_factor, direction):
         return None
     if direction == INCREASING and previous.factor1 >= previous.factor2:
         return None
-    
+
     return Product(
         value = (previous.factor1 + direction) * previous.factor2,
         factor1 = previous.factor1 + direction,
