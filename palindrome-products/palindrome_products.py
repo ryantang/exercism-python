@@ -1,6 +1,9 @@
+import heapq
 from collections import namedtuple
 
 Product = namedtuple('Product', ['value', 'factor1', 'factor2'])
+INCREASING = 1
+DECREASING = -1
 
 def largest(min_factor, max_factor):
     """Given a range of numbers, find the largest palindromes which
@@ -19,7 +22,7 @@ def largest(min_factor, max_factor):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
             print(f"answer is {answer}")
             return answer
-        
+
     return [None, []]
 
 def smallest(min_factor, max_factor):
@@ -38,9 +41,8 @@ def smallest(min_factor, max_factor):
     for product in _products_increasing(min_factor, max_factor):
         if _is_palindrome(product.value):
             answer = (product.value, _factors(product.value, min_factor, max_factor))
-            print(f"answer is {answer}")
             return answer
-        
+
     return [None, []]
 
 def _factors(product, min_factor, max_factor):
@@ -50,58 +52,77 @@ def _factors(product, min_factor, max_factor):
             factors.add(tuple(sorted((factor, product//factor))))
 
     return factors
-        
+
 def _is_palindrome(product):
     return product == int(str(product)[::-1])
-        
+
 def _products_increasing(min_factor, max_factor):
-    lowest_product = Product(value=min_factor*min_factor,factor1=min_factor, factor2=min_factor)
+    lowest_product = _lowest_product(min_factor)
     products = [lowest_product]
+    seen_values = {lowest_product.value}
+
     while products:
-        products.sort(key=lambda p: p.value, reverse=True)
-        product = products.pop()
-        print(f'product is {product}')
+        product = heapq.heappop(products)
         yield product
 
-        if product.factor2 < max_factor:
-            right_factor1 = product.factor1
-            right_factor2 = product.factor2 + 1
-            right_product_val = right_factor1 * right_factor2
-            print(f'right_product_val is {right_product_val}')
+        for next_product in _next_products(product, INCREASING):
+            if next_product.value in seen_values:
+                continue
+            if not _within_bounds(next_product, min_factor, max_factor):
+                continue
 
-            if not any(p.value == right_product_val for p in products):
-                right_product = Product(value=right_product_val,factor1=right_factor1,factor2=right_factor2)
-                products.append(right_product)
-        if product.factor1 < product.factor2:
-            up_factor1 = product.factor1 + 1
-            up_factor2 = product.factor2
-            up_product_val = up_factor1 * up_factor2
-            if not any(p.value == up_product_val for p in products):
-                up_product = Product(value=up_product_val, factor1=up_factor1, factor2=up_factor2)
-                products.append(up_product)
+            seen_values.add(next_product.value)
+            heapq.heappush(products, next_product)
 
 
 def _products_decreasing(min_factor, max_factor):
-    highest_product = Product(value=max_factor*max_factor,factor1=max_factor, factor2=max_factor)
+    highest_product = _highest_product(max_factor)
     products = [highest_product]
+    seen_values = {highest_product.value}
+
     while products:
         products.sort(key=lambda p: p.value)
         product = products.pop()
-        print(f'product is {product}')
         yield product
 
-        if product.factor2 > min_factor:
-            down_factor1 = product.factor1
-            down_factor2 = product.factor2 - 1
-            down_product_val = down_factor1 * down_factor2
-            if not any(p.value == down_product_val for p in products):
-                down_product = Product(value=down_product_val,factor1=down_factor1,factor2=down_factor2)
-                products.append(down_product)
+        for next_product in _next_products(product, DECREASING):
+            if next_product.value in seen_values:
+                continue
+            if not _within_bounds(next_product, min_factor, max_factor):
+                continue
 
-        if product.factor1 > product.factor2:
-            left_factor1 = product.factor1 - 1
-            left_factor2 = product.factor2
-            left_product_val = left_factor1 * left_factor2
-            if not any(p.value == left_product_val for p in products):
-                left_product = Product(value=left_product_val, factor1=left_factor1, factor2=left_factor2)
-                products.append(left_product)
+            seen_values.add(next_product.value)
+            products.append(next_product)
+
+def _lowest_product(min_factor):
+    return Product(
+        value = min_factor * min_factor,
+        factor1 = min_factor,
+        factor2 = min_factor
+    )
+
+def _highest_product(max_factor):
+    return Product(
+        value = max_factor * max_factor,
+        factor1 = max_factor,
+        factor2=max_factor
+    )
+
+def _next_products(product, direction):
+    next_in_row = Product(
+        value = product.factor1 * (product.factor2 + direction),
+        factor1 = product.factor1,
+        factor2 = product.factor2 + direction
+    )
+
+    next_in_col = Product(
+        value = (product.factor1 + direction) * product.factor2,
+        factor1 = product.factor1 + direction,
+        factor2 = product.factor2
+    )
+
+    return (next_in_row, next_in_col)
+
+def _within_bounds(product, min_factor, max_factor):
+    return (min_factor <= product.factor1 <= max_factor
+            and min_factor <= product.factor2 <= max_factor)
