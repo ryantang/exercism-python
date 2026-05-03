@@ -1,7 +1,7 @@
 import heapq
 from collections import namedtuple
-from typing import Iterator
-from typing import TypeAlias
+from typing import Iterator, TypeAlias, Callable
+
 
 FactorPairs: TypeAlias = set[tuple[int,int]]
 Product = namedtuple('Product', ['value', 'factor1', 'factor2'])
@@ -62,53 +62,68 @@ def _is_palindrome(product: Product) -> bool:
     return product == int(str(product)[::-1])
 
 def _products_increasing(min_factor: int, max_factor: int) -> Iterator[Product]:
-    """Generate products in increasing order, starting from the smallest.
-
-    This function implements a search algorithm that efficiently finds the
-    next smallest product at each step. It uses a min-heap to keep track
-    of candidate products, ensuring that the smallest available product is
-    always processed next. This avoids a full search of all possible products.
-    """
-    lowest_product = _square_of(min_factor)
-    products = [lowest_product]
-    seen_values = {lowest_product.value}
-
-    while products:
-        product = heapq.heappop(products)
-        yield product
-
-        for next_product in _next_products(product, INCREASING):
-            if next_product.value in seen_values:
-                continue
-            if not _within_bounds(next_product, min_factor, max_factor):
-                continue
-
-            seen_values.add(next_product.value)
-            heapq.heappush(products, next_product)
+    """Generate products in increasing order, starting from the smallest."""
+    return _products_generator(
+        initial_product=_square_of(min_factor),
+        min_factor=min_factor,
+        max_factor=max_factor,
+        direction=INCREASING,
+        push_func=heapq.heappush,
+        pop_func=heapq.heappop
+    )
 
 def _products_decreasing(min_factor: int, max_factor: int) -> Iterator[Product]:
-    """Generate products in decreasing order, starting from the largest.
+    """Generate products in decreasing order, starting from the largest."""
 
-    This function searches for products starting from the largest possible
-    value. This avoids a full search of all possible products.
+    return _products_generator(
+        initial_product=_square_of(max_factor),
+        min_factor=min_factor,
+        max_factor=max_factor,
+        direction=DECREASING,
+        push_func=heapq.heappush_max,
+        pop_func=heapq.heappop_max
+    )
+
+
+def _products_generator(
+        initial_product: Product,
+        min_factor: int,
+        max_factor: int,
+        direction: int,
+        push_func: Callable[list, Product],
+        pop_func: Callable[list, Product],
+    ) -> Iterator[Product]:
     """
-    highest_product = _square_of(max_factor)
-    products = [highest_product]
-    seen_values = {highest_product.value}
+    This function implements a search algorithm that efficiently finds the
+    next smallest (or largest) product at each step.
+
+    Example with direction=INCREASING: In this case, the caller passes in the
+    smallest possible value as the initial_product. It keeps track of the
+    "seen" values in a set and the upcoming next smallest values in a min_heap
+    list called "products". After popping off the next smallest product from
+    "products", this function searches for its next incrementally larger neighbors
+    ensures that they're valid cadidates and adds them to the "products" heap.
+
+    This works the same way with direction=DECREASING, but reversed and uses
+    max_heap instead of a min_heap.
+    """
+    products = [initial_product]
+    seen_values = {initial_product.value}
 
     while products:
-        products.sort(key=lambda p: p.value)
-        product = products.pop()
+        product = pop_func(products)
         yield product
 
-        for next_product in _next_products(product, DECREASING):
+        for next_product in _next_products(product, direction):
             if next_product.value in seen_values:
                 continue
             if not _within_bounds(next_product, min_factor, max_factor):
                 continue
 
             seen_values.add(next_product.value)
-            products.append(next_product)
+            push_func(products, next_product)
+
+
 
 def _square_of(factor: int) -> Product:
     """Calculate the square of a factor."""
