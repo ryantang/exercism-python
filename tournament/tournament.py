@@ -21,7 +21,7 @@ def tally(rows: list[str]) -> list[str]:
     team_stats = _format_team_stats(sorted_teams)
     return [heading] + team_stats
 
-def _format_team_stats(teams: list[str]) -> list[str]:
+def _format_team_stats(teams: list[Team]) -> list[str]:
     return [
         f'{team.name:<30} | {team.matches_played:>2} | {team.wins:>2} | '
         f'{team.draws:>2} | {team.losses:>2} | {team.points:>2}'
@@ -39,7 +39,7 @@ def _tabulate_team_records(rows: list[str]) -> dict[str, Team]:
         _update_records_from_result(team1, team2, result)
     return teams
 
-def _update_records_from_result(team1: Team, team2: Team, result: str):
+def _update_records_from_result(team1: Team, team2: Team, result: str) -> None:
     team1.matches_played += 1
     team2.matches_played += 1
 
