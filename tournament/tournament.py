@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Team:
+    """A team's running tournament record."""
+
     name: str
     matches_played: int = 0
     wins: int = 0
@@ -10,10 +12,12 @@ class Team:
 
     @property
     def points(self) -> int:
+        """Total points: 3 per win, 1 per draw."""
         return 3 * self.wins + self.draws
 
 
 def tally(rows: list[str]) -> list[str]:
+    """Tally match results into a leaderboard, sorted by points then name."""
     teams = _tabulate_team_records(rows)
     sorted_teams = sorted(teams.values(), key=lambda team: (-team.points, team.name))
 
@@ -22,6 +26,7 @@ def tally(rows: list[str]) -> list[str]:
     return [heading] + team_stats
 
 def _format_team_stats(teams: list[Team]) -> list[str]:
+    """Format each team's stats as a fixed-width table row."""
     return [
         f'{team.name:<30} | {team.matches_played:>2} | {team.wins:>2} | '
         f'{team.draws:>2} | {team.losses:>2} | {team.points:>2}'
@@ -30,6 +35,7 @@ def _format_team_stats(teams: list[Team]) -> list[str]:
 
 
 def _tabulate_team_records(rows: list[str]) -> dict[str, Team]:
+    """Build a name-to-Team mapping by accumulating results from each row."""
     teams = {}
     for row in rows:
         team_name1, team_name2, result = row.split(';')
@@ -40,6 +46,7 @@ def _tabulate_team_records(rows: list[str]) -> dict[str, Team]:
     return teams
 
 def _update_records_from_result(team1: Team, team2: Team, result: str) -> None:
+    """Update both teams' records given the result from team1's perspective."""
     team1.matches_played += 1
     team2.matches_played += 1
 
