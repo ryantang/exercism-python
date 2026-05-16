@@ -1,4 +1,6 @@
-VERSES = [
+"""Recite verses of 'I Know an Old Lady Who Swallowed a Fly'."""
+
+COMMENTARY = [
     "I don't know why she swallowed the fly. Perhaps she'll die.",
     "It wriggled and jiggled and tickled inside her.",
     "How absurd to swallow a bird!",
@@ -9,38 +11,39 @@ VERSES = [
     "She's dead, of course!",
 ]
 
-SPIDER_DESC = "spider that wriggled and jiggled and tickled inside her"
-ANIMALS = ["fly", "spider", "bird", "cat", "dog", "goat", "cow", "horse" ]
-ANIMAL_DESC = ["fly", SPIDER_DESC, "bird", "cat", "dog", "goat", "cow", "horse"]
+ANIMALS = ["fly", "spider", "bird", "cat", "dog", "goat", "cow", "horse"]
+DESCRIPTIONS = {"spider": "spider that wriggled and jiggled and tickled inside her"}
+FLY_INDEX = 0
+HORSE_INDEX = 7
 
-def recite(start_verse, end_verse):
+def recite(start_verse: int, end_verse: int) -> list[str]:
+    """Recite the song 'I know an old lady who swallowed a fly'."""
     lyrics = []
-    for verse_number in range(start_verse, end_verse + 1):
-        lyrics += _compose_verse(verse_number)
-        _add_blank_line_between_verses(lyrics, verse_number, end_verse)
+    for verse_index in range(start_verse - 1, end_verse):
+        lyrics += _compose_verse(verse_index)
+        if verse_index < end_verse - 1:
+            lyrics.append("")
 
     return lyrics
 
-def _add_blank_line_between_verses(lyrics, verse_number, end_verse):
-    if verse_number < end_verse:
-        lyrics.append("")
+def _compose_verse(verse_index: int) -> list[str]:
+    """Return the lines of one verse."""
+    if verse_index in (FLY_INDEX, HORSE_INDEX):
+        return [_opening(verse_index), COMMENTARY[verse_index]]
 
-def _compose_verse(verse_number):
-    if verse_number == 1:
-        return [opening(0), VERSES[0]]
-    if verse_number == 8:
-        return [opening(7), VERSES[7]]
+    food_chain = [_reason(index) for index in range(verse_index, -1, -1)]
+    return [_opening(verse_index), COMMENTARY[verse_index], *food_chain]
 
+def _opening(verse_index: int) -> str:
+    """Return the opening line of a verse for the given animal."""
+    return f"I know an old lady who swallowed a {ANIMALS[verse_index]}."
 
-    start_idx = verse_number - 1
-    lyrics = [opening(start_idx), VERSES[start_idx]]
-    for i in range(start_idx -1, -1, -1):
-        lyrics.append(transition(i))
-    lyrics.append(VERSES[0])
-    return lyrics
+def _reason(verse_index: int) -> str:
+    """Return return the reason the old lady swallowed an animal."""
+    if verse_index == FLY_INDEX:
+        return COMMENTARY[FLY_INDEX]
 
-def opening(verse_idx):
-    return f"I know an old lady who swallowed a {ANIMALS[verse_idx]}."
-
-def transition(verse_idx):
-    return f"She swallowed the {ANIMALS[verse_idx+1]} to catch the {ANIMAL_DESC[verse_idx]}."
+    predator = ANIMALS[verse_index]
+    prey = ANIMALS[verse_index - 1]
+    prey_description = DESCRIPTIONS.get(prey, prey)
+    return f"She swallowed the {predator} to catch the {prey_description}."
