@@ -5,11 +5,8 @@ def largest_product(series, size):
         raise ValueError("span must not be negative")
     if size > len(series):
         raise ValueError("span must not exceed string length")
-    try:
-        int(series)
-    except Exception as e:
-        raise ValueError("digits input must only contain digits") from e
-
+    if series and not series.isdigit():
+        raise ValueError("digits input must only contain digits")
 
     largest = 0
     for span in _find_spans(series, size):
