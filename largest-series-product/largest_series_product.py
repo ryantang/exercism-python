@@ -1,6 +1,8 @@
 import math
 
-def largest_product(series, size):
+def largest_product(series: str, size: int) -> int:
+    '''Given a multi-digit number, find the continugous digits 
+    of the specified length with the largest product'''
     if size < 0:
         raise ValueError("span must not be negative")
     if size > len(series):
@@ -14,7 +16,8 @@ def largest_product(series, size):
     return largest
 
 
-def _find_spans(series, size):
+def _find_spans(series: str, size: int) -> list[int]:
+    '''Yields spans of the given length'''
     digits = [int(digit) for digit in series]
     for starting_index in range(len(digits) + 1 - size):
         yield digits[starting_index:starting_index+size]
