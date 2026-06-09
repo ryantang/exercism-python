@@ -20,30 +20,20 @@ WEEK_RANGE = {
 }
 
 def meetup(year, month, week, day_of_week):
-    if week == 'last':
-        _, last_day_of_month = monthrange(year, month)
-        week_range = range(last_day_of_month - 6, last_day_of_month + 1)
-        for day in week_range:
-            d = date(year, month, day)
-            if d.strftime('%A') == day_of_week:
-                return d
-            
-    if week == 'fifth':
-        _, last_day_of_month = monthrange(year, month)
-        if last_day_of_month < 29:
-            raise MeetupDayException('That day does not exist.')
-        
-        week_range = range(29, last_day_of_month + 1)
-        for day in week_range:
-            d = date(year, month, day)
-            if d.strftime('%A') == day_of_week:
-                return d
-        
+    _, last_of_month = monthrange(year, month)
+    if week == 'fifth' and last_of_month < 29:
         raise MeetupDayException('That day does not exist.')
 
-        
+    if week == 'last':
+        week_range = range(last_of_month - 6, last_of_month + 1)
+    elif week == 'fifth':
+        week_range = range(29, last_of_month + 1)
+    else:
+        week_range = WEEK_RANGE[week]
 
-    for day in WEEK_RANGE[week]:
+    for day in week_range:
         d = date(year, month, day)
         if d.strftime('%A') == day_of_week:
             return d
+
+    raise MeetupDayException('That day does not exist.')
