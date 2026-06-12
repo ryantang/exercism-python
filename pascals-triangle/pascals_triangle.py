@@ -1,4 +1,7 @@
-def rows(row_count):
+"""Exercise to build Pascal's Triangle"""
+
+def rows(row_count:int) -> list[list[int]]:
+    """Given a number, returns that many rows of Pascal's Triangle"""
     if row_count < 0:
         raise ValueError("number of rows is negative")
     if row_count == 0:
@@ -8,7 +11,8 @@ def rows(row_count):
 
 
 
-def triangle(accmulated_rows, max_count):
+def triangle(accmulated_rows: list[list[int]], max_count: int) -> list[list[int]]:
+    """Recursive function to build pascal's triangle"""
     if len(accmulated_rows) == max_count:
         return accmulated_rows
 
