@@ -1,7 +1,5 @@
-from collections import namedtuple
 from dataclasses import dataclass
 
-LineMatch = namedtuple('LineMatch', ['file', 'line_num', 'line'])
 
 @dataclass
 class GrepConfig:
@@ -16,45 +14,42 @@ class GrepConfig:
     show_file_name: bool = False
 
 
-def grep(pattern: str, flags: str, files: list[str]) -> list[str]:
-    config = _parse(flags, len(files))
+@dataclass
+class LineMatch:
+    file: str
+    line_num: int
+    line: str
+
+
+def grep(pattern: str, flags: str, files: list[str]) -> str:
+    config = _parse(flags)
     results = []
 
     for file_name in files:
-        with open(file_name, 'r') as file_handle:
+        with open(file_name) as file_handle:
             for index, line in enumerate(file_handle):
                 if _line_match(pattern, config, line):
                     results.append(LineMatch(f'{file_name}\n', line_num=index+1, line=line))
 
     if config.matching_files_only:
         matching_files = (match.file for match in results)
-        return ''.join(list(dict.fromkeys(matching_files)))
-
-    if config.show_file_name and config.show_line_number:
-        return ''.join([
+        formatted_results = list(dict.fromkeys(matching_files))
+    elif len(files) > 1 and config.show_line_number:
+        formatted_results = [
             f'{result.file.strip()}:{result.line_num}:{result.line}'
             for result in results
-        ])
+        ]
+    elif config.show_line_number:
+        formatted_results = [f'{result.line_num}:{result.line}' for result in results]
+    elif len(files) > 1:
+        formatted_results = [f'{result.file.strip()}:{result.line}' for result in results]
+    else:
+        formatted_results = [result.line for result in results]
 
-    if config.show_line_number:
-        return ''.join([
-            f'{result.line_num}:{result.line}'
-            for result in results
-        ])
-
-    if config.show_file_name:
-        return ''.join([
-            f'{result.file.strip()}:{result.line}'
-            for result in results
-        ])
-
-    return ''.join([
-            f'{result.line}'
-            for result in results
-        ])
+    return ''.join(formatted_results)
 
 
-def _parse(flags: str, num_files: int) -> GrepConfig:
+def _parse(flags: str) -> GrepConfig:
     config = GrepConfig()
     if '-i' in flags:
         config.case_insensitive = True
@@ -67,21 +62,28 @@ def _parse(flags: str, num_files: int) -> GrepConfig:
         config.matching_files_only = True
     if '-n' in flags:
         config.show_line_number = True
-    if num_files > 1:
-        config.show_file_name = True
 
     return config
 
 
 def _line_match(pattern: str, config: GrepConfig, line: str) -> bool:
-    if config.case_insensitive:
-        return pattern.lower() in line.lower()
+    if config.case_insensitive and config.invert_match and config.match_full_line:
+        return pattern.lower() != line.lower().strip()
+
+    if config.case_insensitive and config.invert_match:
+        return pattern.lower() not in line.lower()
+
+    if config.case_insensitive and config.match_full_line:
+        return pattern.lower() == line.lower().strip()
 
     if config.match_full_line and config.invert_match:
         return pattern != line.strip()
 
     if config.match_full_line:
         return pattern == line.strip()
+
+    if config.case_insensitive:
+        return pattern.lower() in line.lower()
 
     if config.invert_match:
         return pattern not in line
