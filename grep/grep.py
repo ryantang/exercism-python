@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class GrepConfig:
+    """Parsed grep options controlling matching and output behavior."""
+
     # matching configs
     case_insensitive: bool = False
     invert_match: bool = False
@@ -16,17 +18,20 @@ class GrepConfig:
 
 @dataclass
 class LineMatch:
+    """A single matching line, with its source file and 1-based line number."""
+
     file: str
     line_num: int
     line: str
 
 
 def grep(pattern: str, flags: str, files: list[str]) -> str:
+    """Search ``files`` for ``pattern`` and return matches formatted per ``flags``."""
     config = _parse(flags)
     results = []
 
     for file_name in files:
-        with open(file_name) as file_handle:
+        with open(file_name, encoding='utf-8') as file_handle:
             for index, line in enumerate(file_handle):
                 if _line_match(pattern, config, line):
                     results.append(LineMatch(f'{file_name}\n', line_num=index+1, line=line))
@@ -50,6 +55,7 @@ def grep(pattern: str, flags: str, files: list[str]) -> str:
 
 
 def _parse(flags: str) -> GrepConfig:
+    """Convert a flags string (e.g. ``"-i -n"``) into a :class:`GrepConfig`."""
     config = GrepConfig()
     if '-i' in flags:
         config.case_insensitive = True
@@ -67,6 +73,7 @@ def _parse(flags: str) -> GrepConfig:
 
 
 def _line_match(pattern: str, config: GrepConfig, line: str) -> bool:
+    """Return True if ``line`` should be included, per matching flags in ``config``."""
     if config.case_insensitive and config.invert_match and config.match_full_line:
         return pattern.lower() != line.lower().strip()
 
