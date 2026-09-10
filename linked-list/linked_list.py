@@ -1,9 +1,12 @@
+''' Doubly linked list implementation'''
+import dataclasses
+
+@dataclasses.dataclass
 class Node:
     ''' A node of a linked list, with pointers to the previous and subsquent nodes '''
-    def __init__(self, value, succeeding=None, previous=None):
-        self.prev = previous
-        self.next = succeeding
-        self.value = value
+    value: any
+    prev: Node = None
+    next: Node = None
 
 
 class LinkedList:
@@ -16,18 +19,22 @@ class LinkedList:
     def __len__(self):
         return self._count
 
+    def __iter__(self):
+        node = self.head
+        while node:
+            yield node
+            node = node.next
+
 
     def delete(self, value: any) -> None:
         ''' Remove the node whose value matches the passed in value '''
         if self._count == 0:
             raise ValueError('Value not found')
 
-        node = self.head
-        while node:
+        for node in self:
             if node.value == value:
                 self._remove_node(node)
                 return
-            node = node.next
 
         raise ValueError('Value not found')
 
