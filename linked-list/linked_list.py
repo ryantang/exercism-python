@@ -45,7 +45,7 @@ class LinkedList:
     def _remove_node(self, node: Node) -> None:
         """Handles special cases for node removal."""
         if self._count == 1:
-            assert node is self.head is self.tail, "single-node list is inconsistent"
+            assert node is self.head is self.tail, 'single-node list is inconsistent'
             self.head = None
             self.tail = None
         elif self.head is node:
